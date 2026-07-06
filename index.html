@@ -6,10 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0e0d10">
-<title>My Record Collection</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Zen+Old+Mincho:wght@400;700&family=Oswald:wght@400;500&display=swap" rel="stylesheet">
+<title>Vinyl Explorer</title>
 <style>
 :root{
   --bg:#0e0d10;
@@ -19,41 +16,43 @@
   --text:#f2ede3;
   --muted:#96909e;
   --accent:#e2a63d;
+  --heart:#e0566b;
   --danger:#d9534f;
-  --serif:"Zen Old Mincho","Hiragino Mincho ProN",serif;
-  --sans:"Oswald","Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  --font:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;overflow:hidden;overscroll-behavior:none}
 body{
-  background:var(--bg);color:var(--text);font-family:var(--sans);
+  background:var(--bg);color:var(--text);font-family:var(--font);
   background-image:radial-gradient(ellipse 120% 60% at 50% -10%,#26212c 0%,var(--bg) 60%);
   user-select:none;-webkit-user-select:none;
 }
 button{font-family:inherit;color:inherit;background:none;border:none;cursor:pointer}
-input,textarea{font-family:"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif}
+input,textarea,select{font-family:var(--font)}
 
 /* ===== header ===== */
 header{
   position:fixed;top:0;left:0;right:0;z-index:20;
-  padding:calc(env(safe-area-inset-top) + 14px) 18px 10px;
-  display:flex;align-items:center;justify-content:space-between;
-  background:linear-gradient(to bottom,rgba(14,13,16,.92),rgba(14,13,16,0));
+  padding:calc(env(safe-area-inset-top) + 14px) 14px 10px;
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  background:linear-gradient(to bottom,rgba(14,13,16,.94),rgba(14,13,16,0));
 }
 header h1{
-  font-family:var(--serif);font-size:19px;font-weight:700;letter-spacing:.06em;
+  font-size:21px;font-weight:800;letter-spacing:.02em;white-space:nowrap;
 }
 header h1 small{
-  display:block;font-family:var(--sans);font-weight:400;font-size:10px;
-  letter-spacing:.32em;color:var(--muted);margin-top:2px;
+  display:block;font-weight:500;font-size:10px;
+  letter-spacing:.3em;color:var(--muted);margin-top:1px;
 }
-.hbtns{display:flex;gap:8px}
+.hbtns{display:flex;gap:7px;flex-shrink:0}
 .iconbtn{
-  width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;
+  width:41px;height:41px;border-radius:12px;display:flex;align-items:center;justify-content:center;
   background:rgba(255,255,255,.06);border:1px solid var(--line);color:var(--text);
 }
-.iconbtn svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.iconbtn svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 .iconbtn.active{background:var(--accent);border-color:var(--accent);color:#1a1206}
+.iconbtn.fav-on{background:var(--heart);border-color:var(--heart);color:#fff}
+.iconbtn.fav-on svg{fill:#fff}
 
 /* ===== coverflow ===== */
 #flowView{position:fixed;inset:0;display:flex;flex-direction:column}
@@ -74,7 +73,6 @@ header h1 small{
   background:
     radial-gradient(circle at 50% 50%,#111 0 12%,var(--accent) 12% 26%,#141414 26% 27%,#0a0a0a 27% 100%),
     repeating-radial-gradient(circle at 50% 50%,#0d0d0d 0 2px,#161616 2px 4px);
-  background-blend-mode:normal,overlay;
   box-shadow:0 0 18px rgba(0,0,0,.7);
   transform:translateX(0);transition:transform .5s cubic-bezier(.22,.9,.3,1);
 }
@@ -95,30 +93,34 @@ header h1 small{
 
 #caption{
   text-align:center;padding:0 24px calc(env(safe-area-inset-bottom) + 96px);
-  min-height:120px;
+  min-height:126px;
 }
-#caption .title{
-  font-family:var(--serif);font-size:22px;font-weight:700;letter-spacing:.04em;line-height:1.35;
-}
+#caption .title{font-size:24px;font-weight:800;letter-spacing:.01em;line-height:1.35}
+#caption .title .hh{color:var(--heart);margin-left:6px;font-size:20px}
 #caption .artist{
-  margin-top:6px;font-size:13px;letter-spacing:.22em;color:var(--accent);text-transform:uppercase;
+  margin-top:6px;font-size:14px;font-weight:600;letter-spacing:.18em;color:var(--accent);text-transform:uppercase;
 }
-#caption .meta{margin-top:6px;font-size:11px;letter-spacing:.12em;color:var(--muted)}
+#caption .meta{margin-top:6px;font-size:12.5px;letter-spacing:.1em;color:var(--muted)}
 #counter{
-  position:absolute;top:calc(env(safe-area-inset-top) + 70px);left:0;right:0;
-  text-align:center;font-size:11px;letter-spacing:.3em;color:var(--muted);
+  position:absolute;top:calc(env(safe-area-inset-top) + 72px);left:0;right:0;
+  text-align:center;font-size:12px;letter-spacing:.28em;color:var(--muted);
 }
 
 /* ===== grid ===== */
 #gridView{
   position:fixed;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch;
-  padding:calc(env(safe-area-inset-top) + 78px) 14px calc(env(safe-area-inset-bottom) + 96px);
+  padding:calc(env(safe-area-inset-top) + 80px) 14px calc(env(safe-area-inset-bottom) + 96px);
   display:none;
 }
 #grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .gcell{aspect-ratio:1/1;border-radius:6px;overflow:hidden;background:var(--surface2);
   box-shadow:0 4px 14px rgba(0,0,0,.4);position:relative}
 .gcell img{width:100%;height:100%;object-fit:cover;display:block}
+.gcell .gfav{
+  position:absolute;top:5px;right:5px;width:20px;height:20px;
+  filter:drop-shadow(0 1px 3px rgba(0,0,0,.7));
+}
+.gcell .gfav svg{width:100%;height:100%;fill:var(--heart);stroke:none}
 
 /* ===== empty ===== */
 #empty{
@@ -131,7 +133,7 @@ header h1 small{
     repeating-radial-gradient(circle,#17151b 0 3px,#1f1c24 3px 6px);
   border:1px solid var(--line);
 }
-#empty p{font-size:13px;line-height:1.9;letter-spacing:.05em}
+#empty p{font-size:14px;line-height:1.9;letter-spacing:.04em}
 
 /* ===== FAB ===== */
 #fab{
@@ -143,7 +145,7 @@ header h1 small{
 }
 #fab svg{width:26px;height:26px;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;fill:none}
 
-/* ===== sheets / modals ===== */
+/* ===== sheets ===== */
 .sheet{
   position:fixed;inset:0;z-index:40;display:none;flex-direction:column;justify-content:flex-end;
   background:rgba(8,7,10,.66);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
@@ -157,53 +159,97 @@ header h1 small{
 }
 @keyframes up{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
 .grip{width:38px;height:4px;border-radius:2px;background:var(--line);margin:4px auto 14px}
-.panel h2{font-family:var(--serif);font-size:17px;font-weight:700;letter-spacing:.06em;margin-bottom:16px}
+.panel h2{font-size:18px;font-weight:800;letter-spacing:.03em;margin-bottom:16px}
 
 /* --- add form --- */
 .pickrow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
 .pickbtn{
   border:1px dashed #4a4452;border-radius:12px;background:var(--surface2);
   padding:16px 8px;display:flex;flex-direction:column;align-items:center;gap:8px;
-  font-size:12px;letter-spacing:.08em;color:var(--text);
+  font-size:13px;letter-spacing:.06em;color:var(--text);
 }
-.pickbtn svg{width:24px;height:24px;stroke:var(--accent);fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.pickbtn svg{width:25px;height:25px;stroke:var(--accent);fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 #preview{
   width:150px;height:150px;border-radius:8px;margin:0 auto 14px;display:none;
   object-fit:cover;box-shadow:0 8px 22px rgba(0,0,0,.5);
 }
 .field{margin-bottom:12px}
-.field label{display:block;font-size:11px;letter-spacing:.18em;color:var(--muted);margin-bottom:6px}
-.field input,.field textarea{
+.field label{display:block;font-size:12px;font-weight:600;letter-spacing:.14em;color:var(--muted);margin-bottom:6px}
+.field input,.field textarea,.field select{
   width:100%;background:var(--surface2);border:1px solid var(--line);border-radius:10px;
-  padding:12px;font-size:16px;color:var(--text);outline:none;
+  padding:13px;font-size:17px;color:var(--text);outline:none;appearance:none;-webkit-appearance:none;
 }
-.field input:focus,.field textarea:focus{border-color:var(--accent)}
+.field select{
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2396909e' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 13px center;
+}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--accent)}
 .frow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .primary{
   width:100%;margin-top:6px;padding:15px;border-radius:12px;background:var(--accent);color:#1a1206;
-  font-size:15px;font-weight:500;letter-spacing:.1em;
+  font-size:16px;font-weight:700;letter-spacing:.08em;
 }
 .primary:disabled{opacity:.4}
-.ghost{width:100%;margin-top:10px;padding:12px;font-size:13px;color:var(--muted);letter-spacing:.1em}
+.ghost{width:100%;margin-top:10px;padding:12px;font-size:14px;color:var(--muted);letter-spacing:.08em}
 
 /* --- detail --- */
+#dHead{position:relative}
+#dFav{
+  position:absolute;top:0;right:0;width:44px;height:44px;
+  display:flex;align-items:center;justify-content:center;
+}
+#dFav svg{width:28px;height:28px;stroke:var(--heart);stroke-width:1.9;fill:none;transition:.2s}
+#dFav.on svg{fill:var(--heart)}
 #dCover{width:min(70vw,280px);aspect-ratio:1/1;border-radius:6px;object-fit:cover;display:block;margin:4px auto 16px;
   box-shadow:0 16px 40px rgba(0,0,0,.6)}
-#dTitle{font-family:var(--serif);font-size:21px;font-weight:700;text-align:center;letter-spacing:.04em;line-height:1.4}
-#dArtist{text-align:center;font-size:13px;letter-spacing:.22em;color:var(--accent);margin-top:6px;text-transform:uppercase}
-#dMeta{text-align:center;font-size:12px;color:var(--muted);margin-top:8px;letter-spacing:.08em}
-#dMemo{font-family:"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
-  font-size:13px;line-height:1.9;color:var(--text);margin-top:14px;white-space:pre-wrap;
+#dTitle{font-size:22px;font-weight:800;text-align:center;letter-spacing:.01em;line-height:1.4}
+#dArtist{text-align:center;font-size:14px;font-weight:600;letter-spacing:.18em;color:var(--accent);margin-top:6px;text-transform:uppercase}
+#dMeta{text-align:center;font-size:13px;color:var(--muted);margin-top:8px;letter-spacing:.06em}
+#dMemo{font-size:14px;line-height:1.9;color:var(--text);margin-top:14px;white-space:pre-wrap;
   background:var(--surface2);border-radius:10px;padding:12px;display:none}
 .drow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}
 .dbtn{padding:13px;border-radius:12px;border:1px solid var(--line);background:var(--surface2);
-  font-size:13px;letter-spacing:.12em}
+  font-size:14px;letter-spacing:.1em}
 .dbtn.del{color:var(--danger);border-color:rgba(217,83,79,.4)}
+
+/* --- search --- */
+#searchBox{position:relative;margin-bottom:14px}
+#searchBox svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);
+  width:18px;height:18px;stroke:var(--muted);fill:none;stroke-width:2;stroke-linecap:round}
+#searchInput{
+  width:100%;background:var(--surface2);border:1px solid var(--line);border-radius:12px;
+  padding:13px 13px 13px 42px;font-size:17px;color:var(--text);outline:none;
+}
+#searchInput:focus{border-color:var(--accent)}
+#searchResults{min-height:200px}
+.srow{
+  display:flex;align-items:center;gap:12px;width:100%;text-align:left;
+  padding:9px 4px;border-bottom:1px solid var(--line);
+}
+.srow img{width:52px;height:52px;border-radius:5px;object-fit:cover;flex-shrink:0;background:var(--surface2)}
+.srow .st{font-size:16px;font-weight:600;line-height:1.3}
+.srow .sa{font-size:13px;color:var(--muted);margin-top:2px}
+.srow .sh{margin-left:auto;flex-shrink:0}
+.srow .sh svg{width:17px;height:17px;fill:var(--heart);stroke:none}
+.noresult{color:var(--muted);font-size:14px;text-align:center;padding:30px 0}
+
+/* --- sort --- */
+.sortopt{
+  display:flex;align-items:center;justify-content:space-between;width:100%;
+  padding:15px 6px;border-bottom:1px solid var(--line);font-size:16px;
+}
+.sortopt .chk{color:var(--accent);font-weight:700;font-size:15px}
+.dirrow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+.dirbtn{
+  padding:13px;border-radius:12px;border:1px solid var(--line);background:var(--surface2);
+  font-size:15px;letter-spacing:.06em;
+}
+.dirbtn.active{background:var(--accent);border-color:var(--accent);color:#1a1206;font-weight:700}
 
 #toast{
   position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 100px);transform:translateX(-50%) translateY(10px);
   background:var(--surface2);border:1px solid var(--line);border-radius:999px;
-  padding:10px 20px;font-size:13px;letter-spacing:.08em;opacity:0;transition:.3s;z-index:60;pointer-events:none;
+  padding:10px 20px;font-size:14px;letter-spacing:.06em;opacity:0;transition:.3s;z-index:60;pointer-events:none;
   white-space:nowrap;
 }
 #toast.show{opacity:1;transform:translateX(-50%)}
@@ -213,13 +259,20 @@ header h1 small{
 <body>
 
 <header>
-  <h1>My Record Collection<small>VINYL ARCHIVE</small></h1>
+  <h1>Vinyl Explorer<small>MY COLLECTION</small></h1>
   <div class="hbtns">
-    <button class="iconbtn active" id="btnFlow" aria-label="カバーフロー表示">
-      <svg viewBox="0 0 24 24"><rect x="8" y="5" width="8" height="14" rx="1"/><path d="M4 7v10M20 7v10"/></svg>
+    <button class="iconbtn" id="btnFav" aria-label="お気に入りのみ表示">
+      <svg viewBox="0 0 24 24"><path d="M12 20s-7-4.6-9.2-8.5C1.2 8.6 2.9 5 6.4 5c2 0 3.5 1.1 4.3 2.6h2.6C14.1 6.1 15.6 5 17.6 5c3.5 0 5.2 3.6 3.6 6.5C19 15.4 12 20 12 20z"/></svg>
     </button>
-    <button class="iconbtn" id="btnGrid" aria-label="一覧表示">
-      <svg viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1"/><rect x="13" y="4" width="7" height="7" rx="1"/><rect x="4" y="13" width="7" height="7" rx="1"/><rect x="13" y="13" width="7" height="7" rx="1"/></svg>
+    <button class="iconbtn" id="btnSearch" aria-label="検索">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></svg>
+    </button>
+    <button class="iconbtn" id="btnSort" aria-label="並べ替え">
+      <svg viewBox="0 0 24 24"><path d="M7 4v14M7 18l-3-3M7 18l3-3M17 20V6M17 6l-3 3M17 6l3 3"/></svg>
+    </button>
+    <button class="iconbtn" id="btnView" aria-label="表示切替">
+      <svg id="icoGrid" viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1"/><rect x="13" y="4" width="7" height="7" rx="1"/><rect x="4" y="13" width="7" height="7" rx="1"/><rect x="13" y="13" width="7" height="7" rx="1"/></svg>
+      <svg id="icoFlow" viewBox="0 0 24 24" style="display:none"><rect x="8" y="5" width="8" height="14" rx="1"/><path d="M4 7v10M20 7v10"/></svg>
     </button>
   </div>
 </header>
@@ -235,7 +288,7 @@ header h1 small{
   </div>
   <div id="empty">
     <div class="ering"></div>
-    <p>まだレコードがありません。<br>右下の＋からジャケットを登録しましょう。</p>
+    <p id="emptyMsg">まだレコードがありません。<br>右下の＋からジャケットを登録しましょう。</p>
   </div>
 </div>
 
@@ -268,8 +321,8 @@ header h1 small{
     <div class="field"><label>タイトル *</label><input id="fTitle" placeholder="Machine Head"></div>
     <div class="field"><label>アーティスト *</label><input id="fArtist" placeholder="Deep Purple"></div>
     <div class="frow">
-      <div class="field"><label>年</label><input id="fYear" inputmode="numeric" placeholder="1972"></div>
-      <div class="field"><label>ジャンル</label><input id="fGenre" placeholder="Hard Rock"></div>
+      <div class="field"><label>年</label><select id="fYear"></select></div>
+      <div class="field"><label>ジャンル</label><select id="fGenre"></select></div>
     </div>
     <div class="field"><label>メモ</label><textarea id="fMemo" rows="2" placeholder="購入店・盤質・思い出など"></textarea></div>
     <button class="primary" id="btnSave" disabled>登録する</button>
@@ -281,7 +334,12 @@ header h1 small{
 <div class="sheet" id="detailSheet">
   <div class="panel">
     <div class="grip"></div>
-    <img id="dCover" alt="">
+    <div id="dHead">
+      <button id="dFav" aria-label="お気に入り">
+        <svg viewBox="0 0 24 24"><path d="M12 20s-7-4.6-9.2-8.5C1.2 8.6 2.9 5 6.4 5c2 0 3.5 1.1 4.3 2.6h2.6C14.1 6.1 15.6 5 17.6 5c3.5 0 5.2 3.6 3.6 6.5C19 15.4 12 20 12 20z"/></svg>
+      </button>
+      <img id="dCover" alt="">
+    </div>
     <div id="dTitle"></div>
     <div id="dArtist"></div>
     <div id="dMeta"></div>
@@ -294,10 +352,51 @@ header h1 small{
   </div>
 </div>
 
+<!-- search sheet -->
+<div class="sheet" id="searchSheet">
+  <div class="panel" style="min-height:70dvh">
+    <div class="grip"></div>
+    <h2>検索</h2>
+    <div id="searchBox">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></svg>
+      <input id="searchInput" type="search" placeholder="アーティスト・アルバム名" autocomplete="off">
+    </div>
+    <div id="searchResults"></div>
+  </div>
+</div>
+
+<!-- sort sheet -->
+<div class="sheet" id="sortSheet">
+  <div class="panel">
+    <div class="grip"></div>
+    <h2>並べ替え</h2>
+    <div id="sortOpts"></div>
+    <div class="dirrow">
+      <button class="dirbtn" data-dir="asc">昇順 ↑</button>
+      <button class="dirbtn" data-dir="desc">降順 ↓</button>
+    </div>
+    <button class="ghost" id="btnCloseSort">閉じる</button>
+  </div>
+</div>
+
 <div id="toast"></div>
 
 <script>
 'use strict';
+/* ================= 定数 ================= */
+const GENRES=[
+  'ロック','ハードロック','ヘヴィメタル','プログレッシブ・ロック','パンク・ロック',
+  'オルタナティブ・ロック','グラム・ロック','ブルース・ロック','サイケデリック・ロック',
+  'ポップ','ブルース','ジャズ','ソウル/R&B','ファンク','ヒップホップ',
+  'エレクトロニック','フォーク','カントリー','レゲエ','クラシック','J-POP/歌謡曲','その他'
+];
+const SORTS=[
+  {key:'created',label:'登録順'},
+  {key:'artist', label:'アーティスト順'},
+  {key:'title',  label:'アルバム名順'},
+  {key:'year',   label:'年代順'},
+];
+
 /* ================= IndexedDB ================= */
 const DB_NAME='recordCollection', STORE='records';
 let db;
@@ -306,9 +405,7 @@ function openDB(){
     const rq=indexedDB.open(DB_NAME,1);
     rq.onupgradeneeded=e=>{
       const d=e.target.result;
-      if(!d.objectStoreNames.contains(STORE)){
-        d.createObjectStore(STORE,{keyPath:'id',autoIncrement:true});
-      }
+      if(!d.objectStoreNames.contains(STORE)) d.createObjectStore(STORE,{keyPath:'id',autoIncrement:true});
     };
     rq.onsuccess=e=>{db=e.target.result;res()};
     rq.onerror=()=>rej(rq.error);
@@ -320,11 +417,14 @@ const dbPut=(rec)=>new Promise((res,rej)=>{const r=tx('readwrite').put(rec);r.on
 const dbDel=(id)=>new Promise((res,rej)=>{const r=tx('readwrite').delete(id);r.onsuccess=()=>res();r.onerror=()=>rej(r.error)});
 
 /* ================= state ================= */
-let records=[];       // {id,title,artist,year,genre,memo,image:Blob,createdAt}
-let urls=new Map();   // id -> objectURL
-let cur=0;            // coverflow index
-let editingId=null;
-let pendingBlob=null;
+let records=[];
+let urls=new Map();
+let cur=0;
+let editingId=null, pendingBlob=null, detailId=null;
+let favOnly=false;
+let sortKey=localStorage.getItem('ve_sortKey')||'created';
+let sortDir=localStorage.getItem('ve_sortDir')||'asc';
+let viewMode='flow';
 
 const $=id=>document.getElementById(id);
 const stage=$('stage');
@@ -338,7 +438,22 @@ function toast(msg){
   clearTimeout(t._tm);t._tm=setTimeout(()=>t.classList.remove('show'),1800);
 }
 
-/* ================= image処理: 正方形トリミング+縮小 ================= */
+/* ================= 表示対象リスト(フィルタ+並べ替え) ================= */
+function visible(){
+  let list=favOnly?records.filter(r=>r.fav):records.slice();
+  const dir=sortDir==='asc'?1:-1;
+  list.sort((a,b)=>{
+    let v=0;
+    if(sortKey==='created')v=a.createdAt-b.createdAt;
+    else if(sortKey==='year')v=(parseInt(a.year)||0)-(parseInt(b.year)||0);
+    else v=String(a[sortKey]||'').localeCompare(String(b[sortKey]||''),'ja');
+    if(v===0)v=a.createdAt-b.createdAt;
+    return v*dir;
+  });
+  return list;
+}
+
+/* ================= 画像処理: 正方形トリミング+縮小 ================= */
 function processImage(file){
   return new Promise((res,rej)=>{
     const img=new Image();
@@ -351,15 +466,18 @@ function processImage(file){
       URL.revokeObjectURL(img.src);
       cv.toBlob(b=>b?res(b):rej(new Error('encode failed')),'image/jpeg',0.86);
     };
-    img.onerror=()=>rej(new Error('画像を読み込めません'));
+    img.onerror=()=>rej(new Error('load failed'));
     img.src=URL.createObjectURL(file);
   });
 }
 
 /* ================= coverflow ================= */
+let flowList=[];
 function buildStage(){
+  flowList=visible();
+  if(cur>=flowList.length)cur=Math.max(0,flowList.length-1);
   stage.innerHTML='';
-  records.forEach((rec,i)=>{
+  flowList.forEach((rec,i)=>{
     const c=document.createElement('div');
     c.className='card';c.dataset.i=i;
     c.innerHTML=`<div class="disc"></div>
@@ -375,35 +493,34 @@ function buildStage(){
   updateCaption();
 }
 function layout(dragOffset){
-  const cards=stage.children;
   const gap=Math.min(window.innerWidth*0.34,150);
-  for(const c of cards){
+  for(const c of stage.children){
     const i=+c.dataset.i;
-    const d=i-cur-dragOffset;       // 実数オフセット
+    const d=i-cur-dragOffset;
     const ad=Math.abs(d);
-    const x=d*gap;
     const rot=Math.max(-55,Math.min(55,-d*45));
-    const z=-ad*160;
-    const s=Math.max(.6,1-ad*.12);
-    c.style.transform=`translate(-50%,-50%) translateX(${x}px) translateZ(${z}px) rotateY(${rot}deg) scale(${s})`;
+    c.style.transform=`translate(-50%,-50%) translateX(${d*gap}px) translateZ(${-ad*160}px) rotateY(${rot}deg) scale(${Math.max(.6,1-ad*.12)})`;
     c.style.zIndex=String(100-Math.round(ad*10));
     c.style.opacity=ad>3.5?0:String(1-ad*.18);
     c.style.filter=`brightness(${Math.max(.45,1-ad*.28)})`;
-    c.classList.toggle('center',Math.abs(d)<.5);
+    c.classList.toggle('center',ad<.5);
   }
 }
 function updateCaption(){
-  const has=records.length>0;
+  const has=flowList.length>0;
   $('empty').style.display=has?'none':'flex';
-  $('counter').textContent=has?`${cur+1} / ${records.length}`:'';
-  const rec=records[cur];
-  $('cTitle').textContent=rec?rec.title:'';
+  $('emptyMsg').innerHTML=favOnly
+    ?'お気に入りのレコードがありません。<br>詳細画面のハートで登録できます。'
+    :'まだレコードがありません。<br>右下の＋からジャケットを登録しましょう。';
+  $('counter').textContent=has?`${cur+1} / ${flowList.length}`:'';
+  const rec=flowList[cur];
+  $('cTitle').innerHTML=rec?esc(rec.title)+(rec.fav?'<span class="hh">♥</span>':''):'';
   $('cArtist').textContent=rec?rec.artist:'';
-  const meta=[rec?.year,rec?.genre].filter(Boolean).join(' ・ ');
-  $('cMeta').textContent=meta;
+  $('cMeta').textContent=rec?[rec.year,rec.genre].filter(Boolean).join(' ・ '):'';
 }
+function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
 function go(i){
-  cur=Math.max(0,Math.min(records.length-1,i));
+  cur=Math.max(0,Math.min(flowList.length-1,i));
   layout(0);updateCaption();
 }
 
@@ -411,7 +528,7 @@ function go(i){
 let dragStartX=0,dragging=false,dragMoved=false;
 const gapPx=()=>Math.min(window.innerWidth*0.34,150);
 stage.addEventListener('pointerdown',e=>{
-  if(!records.length)return;
+  if(!flowList.length)return;
   dragging=true;dragMoved=false;dragStartX=e.clientX;
   stage.classList.add('dragging');
   stage.setPointerCapture(e.pointerId);
@@ -425,8 +542,7 @@ stage.addEventListener('pointermove',e=>{
 function endDrag(e){
   if(!dragging)return;
   dragging=false;stage.classList.remove('dragging');
-  const dx=e.clientX-dragStartX;
-  const off=-dx/gapPx();
+  const off=-(e.clientX-dragStartX)/gapPx();
   go(cur+Math.round(off+0.2*Math.sign(off)));
   setTimeout(()=>dragMoved=false,50);
 }
@@ -437,30 +553,45 @@ window.addEventListener('resize',()=>layout(0));
 /* ================= grid ================= */
 function buildGrid(){
   const g=$('grid');g.innerHTML='';
-  records.forEach((rec,i)=>{
+  visible().forEach(rec=>{
     const cell=document.createElement('button');
     cell.className='gcell';
-    cell.innerHTML=`<img src="${urlOf(rec)}" alt="${rec.title}">`;
+    cell.innerHTML=`<img src="${urlOf(rec)}" alt="${esc(rec.title)}">`+
+      (rec.fav?'<span class="gfav"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.6-9.2-8.5C1.2 8.6 2.9 5 6.4 5c2 0 3.5 1.1 4.3 2.6h2.6C14.1 6.1 15.6 5 17.6 5c3.5 0 5.2 3.6 3.6 6.5C19 15.4 12 20 12 20z"/></svg></span>':'');
     cell.addEventListener('click',()=>openDetail(rec.id));
     g.appendChild(cell);
   });
 }
 
-/* ================= view切替 ================= */
-function showFlow(){
-  $('flowView').style.display='flex';$('gridView').style.display='none';
-  $('btnFlow').classList.add('active');$('btnGrid').classList.remove('active');
-  layout(0);
+/* ================= 表示切替 / お気に入りフィルタ ================= */
+function refreshViews(){
+  if(viewMode==='flow'){buildStage()}else{buildGrid();flowList=visible();}
 }
-function showGrid(){
-  buildGrid();
-  $('flowView').style.display='none';$('gridView').style.display='block';
-  $('btnGrid').classList.add('active');$('btnFlow').classList.remove('active');
-}
-$('btnFlow').addEventListener('click',showFlow);
-$('btnGrid').addEventListener('click',showGrid);
+$('btnView').addEventListener('click',()=>{
+  viewMode=viewMode==='flow'?'grid':'flow';
+  const grid=viewMode==='grid';
+  $('flowView').style.display=grid?'none':'flex';
+  $('gridView').style.display=grid?'block':'none';
+  $('icoGrid').style.display=grid?'none':'block';
+  $('icoFlow').style.display=grid?'block':'none';
+  refreshViews();
+});
+$('btnFav').addEventListener('click',()=>{
+  favOnly=!favOnly;
+  $('btnFav').classList.toggle('fav-on',favOnly);
+  cur=0;
+  refreshViews();
+});
 
-/* ================= add / edit ================= */
+/* ================= 登録 / 編集 ================= */
+function initSelects(){
+  const y=$('fYear');
+  y.innerHTML='<option value="">未設定</option>';
+  const now=new Date().getFullYear();
+  for(let yr=now;yr>=1940;yr--)y.insertAdjacentHTML('beforeend',`<option>${yr}</option>`);
+  const g=$('fGenre');
+  g.innerHTML='<option value="">未設定</option>'+GENRES.map(x=>`<option>${x}</option>`).join('');
+}
 function openForm(rec){
   editingId=rec?rec.id:null;
   pendingBlob=rec?rec.image:null;
@@ -504,35 +635,38 @@ $('btnSave').addEventListener('click',async()=>{
   const rec={
     title:$('fTitle').value.trim(),
     artist:$('fArtist').value.trim(),
-    year:$('fYear').value.trim(),
-    genre:$('fGenre').value.trim(),
+    year:$('fYear').value,
+    genre:$('fGenre').value,
     memo:$('fMemo').value.trim(),
     image:pendingBlob,
   };
   try{
+    let newId=null;
     if(editingId!=null){
-      rec.id=editingId;
       const old=records.find(r=>r.id===editingId);
+      rec.id=editingId;
       rec.createdAt=old?.createdAt||Date.now();
+      rec.fav=old?.fav||false;
       await dbPut(rec);
       if(urls.has(editingId)){URL.revokeObjectURL(urls.get(editingId));urls.delete(editingId);}
       toast('保存しました');
     }else{
       rec.createdAt=Date.now();
-      const id=await dbPut(rec);
+      rec.fav=false;
+      newId=await dbPut(rec);
       toast('登録しました');
-      records=await dbAll();
-      cur=records.findIndex(r=>r.id===id);
     }
     records=await dbAll();
-    if(cur>=records.length)cur=records.length-1;
     closeForm();
+    if(newId!=null){
+      const idx=visible().findIndex(r=>r.id===newId);
+      if(idx>=0)cur=idx;
+    }
     refreshViews();
   }catch(err){toast('保存に失敗しました');}
 });
 
-/* ================= detail ================= */
-let detailId=null;
+/* ================= 詳細 / お気に入り ================= */
 function openDetail(id){
   const rec=records.find(r=>r.id===id);
   if(!rec)return;
@@ -543,8 +677,18 @@ function openDetail(id){
   $('dMeta').textContent=[rec.year,rec.genre].filter(Boolean).join(' ・ ');
   const m=$('dMemo');
   if(rec.memo){m.textContent=rec.memo;m.style.display='block'}else{m.style.display='none'}
+  $('dFav').classList.toggle('on',!!rec.fav);
   $('detailSheet').classList.add('open');
 }
+$('dFav').addEventListener('click',async()=>{
+  const rec=records.find(r=>r.id===detailId);
+  if(!rec)return;
+  rec.fav=!rec.fav;
+  await dbPut(rec);
+  $('dFav').classList.toggle('on',rec.fav);
+  toast(rec.fav?'お気に入りに追加しました':'お気に入りを解除しました');
+  refreshViews();
+});
 $('btnCloseDetail').addEventListener('click',()=>$('detailSheet').classList.remove('open'));
 $('btnEdit').addEventListener('click',()=>{
   const rec=records.find(r=>r.id===detailId);
@@ -556,30 +700,82 @@ $('btnDelete').addEventListener('click',async()=>{
   await dbDel(detailId);
   if(urls.has(detailId)){URL.revokeObjectURL(urls.get(detailId));urls.delete(detailId);}
   records=await dbAll();
-  if(cur>=records.length)cur=Math.max(0,records.length-1);
   $('detailSheet').classList.remove('open');
   refreshViews();
   toast('削除しました');
 });
+
+/* ================= 検索 ================= */
+$('btnSearch').addEventListener('click',()=>{
+  $('searchSheet').classList.add('open');
+  renderSearch('');
+  setTimeout(()=>$('searchInput').focus(),100);
+});
+$('searchInput').addEventListener('input',e=>renderSearch(e.target.value));
+function renderSearch(q){
+  const box=$('searchResults');
+  q=q.trim().toLowerCase();
+  const hits=records.filter(r=>
+    !q||r.title.toLowerCase().includes(q)||r.artist.toLowerCase().includes(q)
+  ).sort((a,b)=>a.artist.localeCompare(b.artist,'ja')||a.title.localeCompare(b.title,'ja'));
+  if(!hits.length){
+    box.innerHTML=`<div class="noresult">${records.length?'該当するレコードがありません':'レコードが登録されていません'}</div>`;
+    return;
+  }
+  box.innerHTML='';
+  hits.forEach(rec=>{
+    const row=document.createElement('button');
+    row.className='srow';
+    row.innerHTML=`<img src="${urlOf(rec)}" alt="">
+      <div><div class="st">${esc(rec.title)}</div><div class="sa">${esc(rec.artist)}${rec.year?' ・ '+rec.year:''}</div></div>`+
+      (rec.fav?'<span class="sh"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.6-9.2-8.5C1.2 8.6 2.9 5 6.4 5c2 0 3.5 1.1 4.3 2.6h2.6C14.1 6.1 15.6 5 17.6 5c3.5 0 5.2 3.6 3.6 6.5C19 15.4 12 20 12 20z"/></svg></span>':'');
+    row.addEventListener('click',()=>{
+      $('searchSheet').classList.remove('open');
+      openDetail(rec.id);
+    });
+    box.appendChild(row);
+  });
+}
+
+/* ================= 並べ替え ================= */
+function renderSortOpts(){
+  const box=$('sortOpts');box.innerHTML='';
+  SORTS.forEach(s=>{
+    const b=document.createElement('button');
+    b.className='sortopt';
+    b.innerHTML=`<span>${s.label}</span><span class="chk">${s.key===sortKey?'✓':''}</span>`;
+    b.addEventListener('click',()=>{sortKey=s.key;applySort()});
+    box.appendChild(b);
+  });
+  document.querySelectorAll('.dirbtn').forEach(b=>{
+    b.classList.toggle('active',b.dataset.dir===sortDir);
+  });
+}
+document.querySelectorAll('.dirbtn').forEach(b=>{
+  b.addEventListener('click',()=>{sortDir=b.dataset.dir;applySort()});
+});
+function applySort(){
+  localStorage.setItem('ve_sortKey',sortKey);
+  localStorage.setItem('ve_sortDir',sortDir);
+  renderSortOpts();
+  cur=0;
+  refreshViews();
+}
+$('btnSort').addEventListener('click',()=>{renderSortOpts();$('sortSheet').classList.add('open')});
+$('btnCloseSort').addEventListener('click',()=>$('sortSheet').classList.remove('open'));
 
 /* シート背景タップで閉じる */
 document.querySelectorAll('.sheet').forEach(s=>{
   s.addEventListener('click',e=>{if(e.target===s)s.classList.remove('open')});
 });
 
-/* ================= refresh ================= */
-function refreshViews(){
-  buildStage();
-  if($('gridView').style.display==='block')buildGrid();
-}
-
 /* ================= init ================= */
 (async()=>{
+  initSelects();
   try{
     await openDB();
     records=await dbAll();
-    records.sort((a,b)=>a.createdAt-b.createdAt);
-    cur=records.length?records.length-1:0;
+    cur=Math.max(0,visible().length-1);
     buildStage();
   }catch(err){
     toast('データベースを開けませんでした');

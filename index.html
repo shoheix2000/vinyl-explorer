@@ -5,18 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#233457">
+<meta name="theme-color" content="#3e5588">
 <title>Vinyl Explorer</title>
 <style>
 :root{
-  --bg:#233457;
-  --bgHi:#31476e;
-  --surface:#2a3d63;
-  --surface2:#33486f;
-  --line:#425983;
-  --text:#eef2f8;
-  --muted:#a3b3cf;
-  --accent:#6db4f5;
+  --bg:#3e5588;
+  --bgHi:#4d67a3;
+  --surface:#46608f;
+  --surface2:#516b9e;
+  --line:#6a83b8;
+  --text:#f4f7fc;
+  --muted:#c6d1e8;
+  --accent:#a8ccff;
+  --btn:#1e3560;
   --want:#58cfc0;
   --heart:#f06a80;
   --danger:#e26661;
@@ -38,9 +39,9 @@ header{
   position:fixed;top:0;left:0;right:0;z-index:20;
   padding:calc(env(safe-area-inset-top) + 14px) 14px 8px;
   display:flex;align-items:center;justify-content:space-between;gap:8px;
-  background:linear-gradient(to bottom,rgba(35,52,87,.95),rgba(35,52,87,.6) 70%,rgba(35,52,87,0));
+  background:linear-gradient(to bottom,rgba(62,85,136,.95),rgba(62,85,136,.6) 70%,rgba(62,85,136,0));
 }
-header h1{font-size:22px;font-weight:800;letter-spacing:.02em;white-space:nowrap}
+header h1{font-size:23px;font-weight:800;letter-spacing:.02em;white-space:nowrap}
 header h1 small{display:block;font-weight:500;font-size:11px;letter-spacing:.28em;color:var(--muted);margin-top:1px}
 .hbtns{display:flex;gap:7px;flex-shrink:0}
 .iconbtn{
@@ -48,7 +49,7 @@ header h1 small{display:block;font-weight:500;font-size:11px;letter-spacing:.28e
   background:rgba(255,255,255,.08);border:1px solid var(--line);color:var(--text);
 }
 .iconbtn svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
-.iconbtn.active{background:var(--accent);border-color:var(--accent);color:#0b2033}
+.iconbtn.active{background:var(--btn);border-color:var(--btn);color:#fff}
 .iconbtn.fav-on{background:var(--heart);border-color:var(--heart);color:#fff}
 .iconbtn.fav-on svg{fill:#fff}
 
@@ -59,15 +60,15 @@ header h1 small{display:block;font-weight:500;font-size:11px;letter-spacing:.28e
   display:grid;grid-template-columns:1fr 1fr;
   background:var(--surface2);border:1px solid var(--line);border-radius:999px;padding:3px;
 }
-.seg{min-width:112px;text-align:center;padding:8px 0;border-radius:999px;font-size:15px;font-weight:600;letter-spacing:.06em;color:var(--muted)}
-.seg.active[data-st="owned"]{background:var(--accent);color:#0b2033}
+.seg{min-width:112px;text-align:center;padding:9px 0;border-radius:999px;font-size:16px;font-weight:600;letter-spacing:.06em;color:var(--muted)}
+.seg.active[data-st="owned"]{background:var(--btn);color:#fff}
 .seg.active[data-st="want"]{background:var(--want);color:#0c2430}
 
 /* ===== coverflow ===== */
 #flowView{position:fixed;inset:0;display:flex;flex-direction:column}
-#stage{flex:1;position:relative;perspective:900px;perspective-origin:50% 45%;touch-action:pan-y;overflow:hidden}
+#stage{flex:1;position:relative;margin-top:calc(env(safe-area-inset-top) + 132px);perspective:900px;perspective-origin:50% 40%;touch-action:pan-y;overflow:hidden}
 .card{
-  position:absolute;left:50%;top:44%;
+  position:absolute;left:50%;top:38%;
   width:min(62vw,290px);aspect-ratio:1/1;
   transform-style:preserve-3d;
   transition:transform .45s cubic-bezier(.22,.9,.3,1),opacity .45s,filter .45s;
@@ -97,13 +98,13 @@ header h1 small{display:block;font-weight:500;font-size:11px;letter-spacing:.28e
 .card .refl img{width:100%;height:100%;object-fit:cover;object-position:top}
 
 #caption{text-align:center;padding:0 24px calc(env(safe-area-inset-bottom) + 92px);min-height:128px}
-#caption .title{font-size:26px;font-weight:800;letter-spacing:.01em;line-height:1.35}
-#caption .title .hh{color:var(--heart);margin-left:6px;font-size:22px}
-#caption .artist{margin-top:6px;font-size:15px;font-weight:600;letter-spacing:.16em;color:var(--accent);text-transform:uppercase}
-#caption .meta{margin-top:6px;font-size:14px;letter-spacing:.08em;color:var(--muted)}
+#caption .title{font-size:28px;font-weight:800;letter-spacing:.01em;line-height:1.35}
+#caption .title .hh{color:var(--heart);margin-left:6px;font-size:23px}
+#caption .artist{margin-top:6px;font-size:16px;font-weight:600;letter-spacing:.16em;color:var(--accent);text-transform:uppercase}
+#caption .meta{margin-top:6px;font-size:15px;letter-spacing:.08em;color:var(--muted)}
 #counter{
-  position:absolute;top:calc(env(safe-area-inset-top) + 118px);left:0;right:0;
-  text-align:center;font-size:13px;letter-spacing:.26em;color:var(--muted);
+  position:absolute;top:calc(env(safe-area-inset-top) + 112px);left:0;right:0;
+  text-align:center;font-size:14px;letter-spacing:.26em;color:var(--muted);
 }
 
 /* ===== grid ===== */
@@ -126,17 +127,17 @@ header h1 small{display:block;font-weight:500;font-size:11px;letter-spacing:.28e
 }
 #empty .ering{
   width:110px;height:110px;border-radius:50%;
-  background:radial-gradient(circle,#1c2a48 0 24%,transparent 24% 26%,#2b3e63 26% 100%),
-    repeating-radial-gradient(circle,#20304f 0 3px,#2b3e63 3px 6px);
+  background:radial-gradient(circle,#2b3d66 0 24%,transparent 24% 26%,#3d5486 26% 100%),
+    repeating-radial-gradient(circle,#31456f 0 3px,#3d5486 3px 6px);
   border:1px solid var(--line);
 }
-#empty p{font-size:15px;line-height:1.9;letter-spacing:.04em}
+#empty p{font-size:16px;line-height:1.9;letter-spacing:.04em}
 
 /* ===== FAB ===== */
 #fab{
   position:fixed;right:18px;bottom:max(14px, calc(env(safe-area-inset-bottom) - 6px));z-index:25;
-  width:60px;height:60px;border-radius:50%;background:var(--accent);color:#0b2033;
-  box-shadow:0 10px 28px rgba(109,180,245,.35);
+  width:60px;height:60px;border-radius:50%;background:var(--btn);color:#fff;
+  box-shadow:0 10px 28px rgba(15,28,58,.5);
   display:flex;align-items:center;justify-content:center;
 }
 #fab svg{width:27px;height:27px;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;fill:none}
@@ -144,7 +145,7 @@ header h1 small{display:block;font-weight:500;font-size:11px;letter-spacing:.28e
 /* ===== sheets ===== */
 .sheet{
   position:fixed;inset:0;z-index:40;display:none;flex-direction:column;justify-content:flex-end;
-  background:rgba(12,19,36,.7);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+  background:rgba(18,28,52,.62);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
 }
 .sheet.open{display:flex}
 .panel{
@@ -155,7 +156,7 @@ header h1 small{display:block;font-weight:500;font-size:11px;letter-spacing:.28e
 }
 @keyframes up{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
 .grip{width:38px;height:4px;border-radius:2px;background:var(--line);margin:4px auto 14px}
-.panel h2{font-size:19px;font-weight:800;letter-spacing:.03em;margin-bottom:16px}
+.panel h2{font-size:20px;font-weight:800;letter-spacing:.03em;margin-bottom:16px}
 .panelhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
 .panelhead h2{margin-bottom:0}
 .xbtn{
@@ -165,32 +166,31 @@ header h1 small{display:block;font-weight:500;font-size:11px;letter-spacing:.28e
 .xbtn svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round}
 
 /* --- add form --- */
-.bulkrow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px}
-.bulkbtn{
-  display:flex;flex-direction:column;align-items:center;gap:7px;
-  border:1px solid var(--line);border-radius:12px;background:var(--surface2);
-  padding:13px 6px;font-size:14px;letter-spacing:.04em;
-}
-.bulkbtn svg{width:22px;height:22px;stroke:var(--want);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-.csvhint{font-size:12.5px;color:var(--muted);line-height:1.7;margin-bottom:12px;text-align:center}
-.orline{display:flex;align-items:center;gap:12px;color:var(--muted);font-size:13px;margin:2px 0 14px}
-.orline::before,.orline::after{content:'';flex:1;height:1px;background:var(--line)}
-.pickrow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.pickrow{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
 .pickbtn{
-  border:1px dashed #5a719f;border-radius:12px;background:var(--surface2);
-  padding:16px 8px;display:flex;flex-direction:column;align-items:center;gap:8px;
-  font-size:14px;letter-spacing:.05em;color:var(--text);
+  border:1px dashed #7e96c6;border-radius:12px;background:var(--surface2);
+  padding:14px 4px;display:flex;flex-direction:column;align-items:center;gap:7px;
+  font-size:12.5px;letter-spacing:.02em;color:var(--text);white-space:nowrap;
 }
-.pickbtn svg{width:26px;height:26px;stroke:var(--accent);fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+/* --- batch sheet --- */
+.batchopt{
+  display:flex;align-items:center;gap:14px;width:100%;text-align:left;
+  border:1px solid var(--line);border-radius:14px;background:var(--surface2);
+  padding:17px 16px;margin-bottom:12px;
+}
+.batchopt svg{width:26px;height:26px;flex-shrink:0;stroke:var(--accent);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.batchopt .bt{font-size:17px;font-weight:600}
+.batchopt .bd{font-size:13.5px;color:var(--muted);margin-top:3px;line-height:1.6}
+.pickbtn svg{width:24px;height:24px;stroke:var(--accent);fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 #preview{
   width:150px;height:150px;border-radius:8px;margin:0 auto 14px;display:none;
   object-fit:cover;box-shadow:0 8px 22px rgba(10,16,30,.5);
 }
 .field{margin-bottom:12px}
-.field label{display:block;font-size:13px;font-weight:600;letter-spacing:.12em;color:var(--muted);margin-bottom:6px}
+.field label{display:block;font-size:14px;font-weight:600;letter-spacing:.12em;color:var(--muted);margin-bottom:6px}
 .field input,.field textarea,.field select{
   width:100%;background:var(--surface2);border:1px solid var(--line);border-radius:10px;
-  padding:13px;font-size:17px;color:var(--text);outline:none;appearance:none;-webkit-appearance:none;
+  padding:13px;font-size:18px;color:var(--text);outline:none;appearance:none;-webkit-appearance:none;
 }
 .field select{
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23a3b3cf' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
@@ -202,16 +202,16 @@ header h1 small{display:block;font-weight:500;font-size:11px;letter-spacing:.28e
 .statusrow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
 .stbtn{
   padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--surface2);
-  font-size:15.5px;font-weight:600;letter-spacing:.06em;color:var(--muted);
+  font-size:16.5px;font-weight:600;letter-spacing:.06em;color:var(--muted);
 }
-.stbtn.active[data-st="owned"]{background:var(--accent);border-color:var(--accent);color:#0b2033}
+.stbtn.active[data-st="owned"]{background:var(--btn);border-color:var(--btn);color:#fff}
 .stbtn.active[data-st="want"]{background:var(--want);border-color:var(--want);color:#0c2430}
 .primary{
-  width:100%;margin-top:6px;padding:16px;border-radius:12px;background:var(--accent);color:#0b2033;
-  font-size:17px;font-weight:700;letter-spacing:.08em;
+  width:100%;margin-top:6px;padding:16px;border-radius:12px;background:var(--btn);color:#fff;
+  font-size:18px;font-weight:700;letter-spacing:.08em;
 }
 .primary:disabled{opacity:.4}
-.ghost{width:100%;margin-top:10px;padding:12px;font-size:15px;color:var(--muted);letter-spacing:.08em}
+.ghost{width:100%;margin-top:10px;padding:12px;font-size:16px;color:var(--muted);letter-spacing:.08em}
 
 /* --- crop --- */
 #cropSheet{z-index:50}
@@ -229,20 +229,20 @@ header h1 small{display:block;font-weight:500;font-size:11px;letter-spacing:.28e
     linear-gradient(to bottom,transparent calc(33.3% - .5px),rgba(255,255,255,.25) 33.3%,transparent calc(33.3% + .5px)),
     linear-gradient(to bottom,transparent calc(66.6% - .5px),rgba(255,255,255,.25) 66.6%,transparent calc(66.6% + .5px));
 }
-.crophint{text-align:center;font-size:13.5px;color:var(--muted);margin-bottom:14px;line-height:1.7}
+.crophint{text-align:center;font-size:14.5px;color:var(--muted);margin-bottom:14px;line-height:1.7}
 .croprow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.cropbtn{padding:15px;border-radius:12px;font-size:16px;font-weight:600;letter-spacing:.06em}
-.cropbtn.ok{background:var(--accent);color:#0b2033}
+.cropbtn{padding:15px;border-radius:12px;font-size:17px;font-weight:600;letter-spacing:.06em}
+.cropbtn.ok{background:var(--btn);color:#fff}
 .cropbtn.ng{border:1px solid var(--line);background:var(--surface2);color:var(--muted)}
 
 /* --- bulk assign --- */
-#bProgress{text-align:center;font-size:14px;letter-spacing:.2em;color:var(--muted);margin-bottom:10px}
+#bProgress{text-align:center;font-size:15px;letter-spacing:.2em;color:var(--muted);margin-bottom:10px}
 #bPreview{width:140px;height:140px;border-radius:8px;object-fit:cover;display:block;margin:0 auto 14px;
   box-shadow:0 8px 22px rgba(10,16,30,.5)}
 #bNewFields{display:block}
 .bulkactions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px}
-.bskip{padding:14px;border-radius:12px;border:1px solid var(--line);background:var(--surface2);font-size:15px;color:var(--muted)}
-.bok{padding:14px;border-radius:12px;background:var(--accent);color:#0b2033;font-size:16px;font-weight:700}
+.bskip{padding:14px;border-radius:12px;border:1px solid var(--line);background:var(--surface2);font-size:16px;color:var(--muted)}
+.bok{padding:14px;border-radius:12px;background:var(--btn);color:#fff;font-size:17px;font-weight:700}
 .bok:disabled{opacity:.4}
 
 /* --- detail --- */
@@ -251,27 +251,27 @@ header h1 small{display:block;font-weight:500;font-size:11px;letter-spacing:.28e
 #dFav{
   display:flex;align-items:center;justify-content:center;gap:7px;
   margin:0 auto 12px;padding:9px 20px;border-radius:999px;
-  border:1px solid var(--line);background:var(--surface2);font-size:14.5px;color:var(--muted);
+  border:1px solid var(--line);background:var(--surface2);font-size:15.5px;color:var(--muted);
 }
 #dFav svg{width:22px;height:22px;stroke:var(--heart);stroke-width:1.9;fill:none;transition:.2s}
 #dFav.on{border-color:rgba(240,106,128,.55);color:var(--heart)}
 #dFav.on svg{fill:var(--heart)}
-#dTitle{font-size:24px;font-weight:800;text-align:center;letter-spacing:.01em;line-height:1.4}
-#dArtist{text-align:center;font-size:15px;font-weight:600;letter-spacing:.16em;color:var(--accent);margin-top:6px;text-transform:uppercase}
-#dMeta{text-align:center;font-size:14.5px;color:var(--muted);margin-top:8px;letter-spacing:.05em}
+#dTitle{font-size:26px;font-weight:800;text-align:center;letter-spacing:.01em;line-height:1.4}
+#dArtist{text-align:center;font-size:16px;font-weight:600;letter-spacing:.16em;color:var(--accent);margin-top:6px;text-transform:uppercase}
+#dMeta{text-align:center;font-size:15.5px;color:var(--muted);margin-top:8px;letter-spacing:.05em}
 #dStatus{
   display:block;width:fit-content;margin:10px auto 0;padding:5px 15px;border-radius:999px;
-  font-size:12.5px;font-weight:700;letter-spacing:.14em;
+  font-size:13.5px;font-weight:700;letter-spacing:.14em;
 }
-#dStatus.owned{background:rgba(109,180,245,.16);color:var(--accent);border:1px solid rgba(109,180,245,.45)}
+#dStatus.owned{background:var(--btn);color:#fff;border:1px solid var(--btn)}
 #dStatus.want{background:rgba(88,207,192,.14);color:var(--want);border:1px solid rgba(88,207,192,.45)}
 #dLink{display:none;align-items:center;gap:8px;margin-top:14px;padding:13px;background:var(--surface2);border-radius:10px;max-width:100%}
 #dLink svg{width:18px;height:18px;flex-shrink:0;stroke:var(--accent);fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
-#dLink a{flex:1;min-width:0;font-size:15px;text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#dMemo{font-size:15px;line-height:1.9;color:var(--text);margin-top:12px;white-space:pre-wrap;word-break:break-word;
+#dLink a{flex:1;min-width:0;font-size:16px;text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#dMemo{font-size:16px;line-height:1.9;color:var(--text);margin-top:12px;white-space:pre-wrap;word-break:break-word;
   background:var(--surface2);border-radius:10px;padding:13px;display:none}
 .drow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}
-.dbtn{padding:14px;border-radius:12px;border:1px solid var(--line);background:var(--surface2);font-size:15px;letter-spacing:.1em}
+.dbtn{padding:14px;border-radius:12px;border:1px solid var(--line);background:var(--surface2);font-size:16px;letter-spacing:.1em}
 .dbtn.del{color:var(--danger);border-color:rgba(226,102,97,.45)}
 
 /* --- search --- */
@@ -279,7 +279,7 @@ header h1 small{display:block;font-weight:500;font-size:11px;letter-spacing:.28e
 #searchBox svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);width:19px;height:19px;stroke:var(--muted);fill:none;stroke-width:2;stroke-linecap:round}
 #searchInput{
   width:100%;background:var(--surface2);border:1px solid var(--line);border-radius:12px;
-  padding:13px 13px 13px 44px;font-size:17px;color:var(--text);outline:none;
+  padding:13px 13px 13px 44px;font-size:18px;color:var(--text);outline:none;
 }
 #searchInput::placeholder{color:#7e91b4}
 #searchInput:focus{border-color:var(--accent)}
@@ -287,25 +287,25 @@ header h1 small{display:block;font-weight:500;font-size:11px;letter-spacing:.28e
 .srow{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:10px 4px;border-bottom:1px solid var(--line)}
 .srow img{width:54px;height:54px;border-radius:5px;object-fit:cover;flex-shrink:0;background:var(--surface2)}
 .srow .sc{min-width:0}
-.srow .st{font-size:17px;font-weight:600;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.srow .sa{font-size:14px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.srow .st{font-size:18px;font-weight:600;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.srow .sa{font-size:15px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .stag{font-size:11px;font-weight:700;letter-spacing:.08em;padding:2px 8px;border-radius:99px;margin-left:6px;vertical-align:2px}
 .stag.want{background:rgba(88,207,192,.15);color:var(--want)}
 .srow .sh{margin-left:auto;flex-shrink:0}
 .srow .sh svg{width:18px;height:18px;fill:var(--heart);stroke:none}
-.noresult{color:var(--muted);font-size:15px;text-align:center;padding:30px 0}
+.noresult{color:var(--muted);font-size:16px;text-align:center;padding:30px 0}
 
 /* --- sort --- */
-.sortopt{display:flex;align-items:center;justify-content:space-between;width:100%;padding:16px 6px;border-bottom:1px solid var(--line);font-size:17px}
-.sortopt .chk{color:var(--accent);font-weight:700;font-size:16px}
+.sortopt{display:flex;align-items:center;justify-content:space-between;width:100%;padding:16px 6px;border-bottom:1px solid var(--line);font-size:18px}
+.sortopt .chk{color:var(--accent);font-weight:700;font-size:17px}
 .dirrow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
-.dirbtn{padding:14px;border-radius:12px;border:1px solid var(--line);background:var(--surface2);font-size:16px;letter-spacing:.06em}
-.dirbtn.active{background:var(--accent);border-color:var(--accent);color:#0b2033;font-weight:700}
+.dirbtn{padding:14px;border-radius:12px;border:1px solid var(--line);background:var(--surface2);font-size:17px;letter-spacing:.06em}
+.dirbtn.active{background:var(--btn);border-color:var(--btn);color:#fff;font-weight:700}
 
 #toast{
   position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 100px);transform:translateX(-50%) translateY(10px);
   background:var(--surface2);border:1px solid var(--line);border-radius:999px;
-  padding:11px 22px;font-size:15px;letter-spacing:.05em;opacity:0;transition:.3s;z-index:60;pointer-events:none;
+  padding:11px 22px;font-size:16px;letter-spacing:.05em;opacity:0;transition:.3s;z-index:60;pointer-events:none;
   max-width:88vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
 #toast.show{opacity:1;transform:translateX(-50%)}
@@ -369,22 +369,8 @@ header h1 small{display:block;font-weight:500;font-size:11px;letter-spacing:.28e
       </button>
     </div>
 
-    <div id="csvArea">
-      <div class="bulkrow">
-        <button class="bulkbtn" id="csvBtn">
-          <svg viewBox="0 0 24 24"><path d="M12 3v12M12 15l-4-4M12 15l4-4"/><path d="M4 17v3h16v-3"/></svg>
-          CSVから一括登録
-        </button>
-        <button class="bulkbtn" id="bulkPhotoBtn">
-          <svg viewBox="0 0 24 24"><rect x="7" y="7" width="13" height="13" rx="2"/><path d="M4 16V5a1 1 0 011-1h11"/><circle cx="11.5" cy="11.5" r="1.5"/><path d="M7 17l4-4 3 3 2.5-2.5 3.5 3.5"/></svg>
-          写真をまとめて登録
-        </button>
-      </div>
-      <div class="csvhint">CSV列: タイトル, アーティスト, 年, ジャンル, メモ, URL, 区分(所有/購入予定), お気に入り(1)<br>UTF-8 / Shift_JIS 対応</div>
-      <input type="file" id="fileCSV" accept=".csv,text/csv" hidden>
-      <input type="file" id="fileBulk" accept="image/*" multiple hidden>
-      <div class="orline">または個別に登録</div>
-    </div>
+    <input type="file" id="fileCSV" accept=".csv,text/csv" hidden>
+    <input type="file" id="fileBulk" accept="image/*" multiple hidden>
 
     <img id="preview" alt="ジャケットプレビュー">
     <div class="pickrow">
@@ -395,6 +381,10 @@ header h1 small{display:block;font-weight:500;font-size:11px;letter-spacing:.28e
       <button class="pickbtn" id="pickRoll">
         <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><circle cx="9" cy="9" r="1.6"/><path d="M4 17l5-5 4 4 3-3 4 4"/></svg>
         写真から選択
+      </button>
+      <button class="pickbtn" id="batchBtn">
+        <svg viewBox="0 0 24 24"><rect x="7" y="7" width="13" height="13" rx="2"/><path d="M4 16V5a1 1 0 011-1h11"/><path d="M13.5 10.5v6M10.5 13.5h6"/></svg>
+        まとめて追加
       </button>
     </div>
     <input type="file" id="fileCamera" accept="image/*" capture="environment" hidden>
@@ -415,6 +405,25 @@ header h1 small{display:block;font-weight:500;font-size:11px;letter-spacing:.28e
     <div class="field"><label>メモ</label><textarea id="fMemo" rows="2" placeholder="購入店・盤質・思い出など"></textarea></div>
     <button class="primary" id="btnSave" disabled>登録する</button>
     <button class="ghost" id="btnCancel">キャンセル</button>
+  </div>
+</div>
+
+<!-- batch chooser sheet -->
+<div class="sheet" id="batchSheet">
+  <div class="panel">
+    <div class="grip"></div>
+    <h2>まとめて追加</h2>
+    <button class="batchopt" id="csvBtn">
+      <svg viewBox="0 0 24 24"><path d="M12 3v12M12 15l-4-4M12 15l4-4"/><path d="M4 17v3h16v-3"/></svg>
+      <div><div class="bt">CSVから一括登録</div>
+      <div class="bd">列: タイトル, アーティスト, 年, ジャンル, メモ, URL, 区分(所有/購入予定), お気に入り(1)。UTF-8 / Shift_JIS 対応</div></div>
+    </button>
+    <button class="batchopt" id="bulkPhotoBtn">
+      <svg viewBox="0 0 24 24"><rect x="7" y="7" width="13" height="13" rx="2"/><path d="M4 16V5a1 1 0 011-1h11"/><circle cx="11.5" cy="11.5" r="1.5"/><path d="M7 17l4-4 3 3 2.5-2.5 3.5 3.5"/></svg>
+      <div><div class="bt">写真をまとめて登録</div>
+      <div class="bd">複数の写真を選択し、1枚ずつトリミングして新規登録または既存レコードに割り当てます</div></div>
+    </button>
+    <button class="ghost" id="btnCloseBatch">閉じる</button>
   </div>
 </div>
 
@@ -872,7 +881,6 @@ document.querySelectorAll('.statusrow .stbtn:not(.bst)').forEach(b=>{
 function openForm(rec){
   editingId=rec?rec.id:null;
   pendingBlob=rec&&hasImage(rec)?rec.image:null;
-  $('csvArea').style.display=rec?'none':'block';
   $('formTitle').textContent=rec?'レコードを編集':'レコードを登録';
   $('btnSave').textContent=rec?'保存する':'登録する';
   $('fTitle').value=rec?.title||'';
@@ -954,6 +962,8 @@ $('btnSave').addEventListener('click',async()=>{
 });
 
 /* ================= CSV一括登録 ================= */
+$('batchBtn').addEventListener('click',()=>$('batchSheet').classList.add('open'));
+$('btnCloseBatch').addEventListener('click',()=>$('batchSheet').classList.remove('open'));
 $('csvBtn').addEventListener('click',()=>$('fileCSV').click());
 $('fileCSV').addEventListener('change',async e=>{
   const f=e.target.files[0];e.target.value='';
@@ -981,6 +991,7 @@ $('fileCSV').addEventListener('change',async e=>{
       ok++;
     }
     records=(await dbAll()).map(norm);
+    $('batchSheet').classList.remove('open');
     closeForm();
     refreshViews();
     toast(`${ok}件登録しました${skip?`(スキップ${skip}件)`:''}`);
@@ -1032,6 +1043,7 @@ $('fileBulk').addEventListener('change',e=>{
   bulkFiles=[...e.target.files];e.target.value='';
   if(!bulkFiles.length)return;
   bulkIdx=0;bulkDone=0;
+  $('batchSheet').classList.remove('open');
   closeForm();
   bulkNext();
 });

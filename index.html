@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0e0d10">
+<title>My Record Collection</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Old+Mincho:wght@400;700&family=Oswald:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0e0d10;
+  --surface:#1a181d;
+  --surface2:#242128;
+  --line:#332f38;
+  --text:#f2ede3;
+  --muted:#96909e;
+  --accent:#e2a63d;
+  --danger:#d9534f;
+  --serif:"Zen Old Mincho","Hiragino Mincho ProN",serif;
+  --sans:"Oswald","Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;overscroll-behavior:none}
+body{
+  background:var(--bg);color:var(--text);font-family:var(--sans);
+  background-image:radial-gradient(ellipse 120% 60% at 50% -10%,#26212c 0%,var(--bg) 60%);
+  user-select:none;-webkit-user-select:none;
+}
+button{font-family:inherit;color:inherit;background:none;border:none;cursor:pointer}
+input,textarea{font-family:"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif}
+
+/* ===== header ===== */
+header{
+  position:fixed;top:0;left:0;right:0;z-index:20;
+  padding:calc(env(safe-area-inset-top) + 14px) 18px 10px;
+  display:flex;align-items:center;justify-content:space-between;
+  background:linear-gradient(to bottom,rgba(14,13,16,.92),rgba(14,13,16,0));
+}
+header h1{
+  font-family:var(--serif);font-size:19px;font-weight:700;letter-spacing:.06em;
+}
+header h1 small{
+  display:block;font-family:var(--sans);font-weight:400;font-size:10px;
+  letter-spacing:.32em;color:var(--muted);margin-top:2px;
+}
+.hbtns{display:flex;gap:8px}
+.iconbtn{
+  width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;
+  background:rgba(255,255,255,.06);border:1px solid var(--line);color:var(--text);
+}
+.iconbtn svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.iconbtn.active{background:var(--accent);border-color:var(--accent);color:#1a1206}
+
+/* ===== coverflow ===== */
+#flowView{position:fixed;inset:0;display:flex;flex-direction:column}
+#stage{
+  flex:1;position:relative;perspective:900px;perspective-origin:50% 42%;
+  touch-action:pan-y;overflow:hidden;
+}
+.card{
+  position:absolute;left:50%;top:40%;
+  width:min(64vw,300px);aspect-ratio:1/1;
+  transform-style:preserve-3d;
+  transition:transform .45s cubic-bezier(.22,.9,.3,1),opacity .45s,filter .45s;
+  will-change:transform;
+}
+#stage.dragging .card{transition:none}
+.card .disc{
+  position:absolute;inset:4% 0;left:auto;right:0;width:96%;aspect-ratio:1/1;border-radius:50%;
+  background:
+    radial-gradient(circle at 50% 50%,#111 0 12%,var(--accent) 12% 26%,#141414 26% 27%,#0a0a0a 27% 100%),
+    repeating-radial-gradient(circle at 50% 50%,#0d0d0d 0 2px,#161616 2px 4px);
+  background-blend-mode:normal,overlay;
+  box-shadow:0 0 18px rgba(0,0,0,.7);
+  transform:translateX(0);transition:transform .5s cubic-bezier(.22,.9,.3,1);
+}
+.card.center .disc{transform:translateX(16%)}
+.card .sleeve{
+  position:absolute;inset:0;border-radius:4px;overflow:hidden;
+  background:var(--surface2);
+  box-shadow:0 18px 46px rgba(0,0,0,.65),inset 0 0 0 1px rgba(255,255,255,.07);
+}
+.card .sleeve img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
+.card .refl{
+  position:absolute;top:calc(100% + 6px);left:0;width:100%;height:55%;border-radius:4px;overflow:hidden;
+  transform:scaleY(-1);opacity:.22;pointer-events:none;
+  -webkit-mask-image:linear-gradient(to top,rgba(0,0,0,0) 30%,rgba(0,0,0,1));
+  mask-image:linear-gradient(to top,rgba(0,0,0,0) 30%,rgba(0,0,0,1));
+}
+.card .refl img{width:100%;height:100%;object-fit:cover;object-position:top}
+
+#caption{
+  text-align:center;padding:0 24px calc(env(safe-area-inset-bottom) + 96px);
+  min-height:120px;
+}
+#caption .title{
+  font-family:var(--serif);font-size:22px;font-weight:700;letter-spacing:.04em;line-height:1.35;
+}
+#caption .artist{
+  margin-top:6px;font-size:13px;letter-spacing:.22em;color:var(--accent);text-transform:uppercase;
+}
+#caption .meta{margin-top:6px;font-size:11px;letter-spacing:.12em;color:var(--muted)}
+#counter{
+  position:absolute;top:calc(env(safe-area-inset-top) + 70px);left:0;right:0;
+  text-align:center;font-size:11px;letter-spacing:.3em;color:var(--muted);
+}
+
+/* ===== grid ===== */
+#gridView{
+  position:fixed;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding:calc(env(safe-area-inset-top) + 78px) 14px calc(env(safe-area-inset-bottom) + 96px);
+  display:none;
+}
+#grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.gcell{aspect-ratio:1/1;border-radius:6px;overflow:hidden;background:var(--surface2);
+  box-shadow:0 4px 14px rgba(0,0,0,.4);position:relative}
+.gcell img{width:100%;height:100%;object-fit:cover;display:block}
+
+/* ===== empty ===== */
+#empty{
+  position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;
+  gap:14px;color:var(--muted);text-align:center;padding:0 30px;
+}
+#empty .ering{
+  width:110px;height:110px;border-radius:50%;
+  background:radial-gradient(circle,#151318 0 24%,transparent 24% 26%,#1d1a22 26% 100%),
+    repeating-radial-gradient(circle,#17151b 0 3px,#1f1c24 3px 6px);
+  border:1px solid var(--line);
+}
+#empty p{font-size:13px;line-height:1.9;letter-spacing:.05em}
+
+/* ===== FAB ===== */
+#fab{
+  position:fixed;right:20px;bottom:calc(env(safe-area-inset-bottom) + 24px);z-index:25;
+  width:58px;height:58px;border-radius:50%;
+  background:var(--accent);color:#1a1206;
+  box-shadow:0 10px 28px rgba(226,166,61,.35);
+  display:flex;align-items:center;justify-content:center;
+}
+#fab svg{width:26px;height:26px;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;fill:none}
+
+/* ===== sheets / modals ===== */
+.sheet{
+  position:fixed;inset:0;z-index:40;display:none;flex-direction:column;justify-content:flex-end;
+  background:rgba(8,7,10,.66);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+}
+.sheet.open{display:flex}
+.panel{
+  background:var(--surface);border-radius:20px 20px 0 0;border-top:1px solid var(--line);
+  max-height:92dvh;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding:10px 20px calc(env(safe-area-inset-bottom) + 20px);
+  animation:up .3s cubic-bezier(.22,.9,.3,1);
+}
+@keyframes up{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
+.grip{width:38px;height:4px;border-radius:2px;background:var(--line);margin:4px auto 14px}
+.panel h2{font-family:var(--serif);font-size:17px;font-weight:700;letter-spacing:.06em;margin-bottom:16px}
+
+/* --- add form --- */
+.pickrow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.pickbtn{
+  border:1px dashed #4a4452;border-radius:12px;background:var(--surface2);
+  padding:16px 8px;display:flex;flex-direction:column;align-items:center;gap:8px;
+  font-size:12px;letter-spacing:.08em;color:var(--text);
+}
+.pickbtn svg{width:24px;height:24px;stroke:var(--accent);fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+#preview{
+  width:150px;height:150px;border-radius:8px;margin:0 auto 14px;display:none;
+  object-fit:cover;box-shadow:0 8px 22px rgba(0,0,0,.5);
+}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:11px;letter-spacing:.18em;color:var(--muted);margin-bottom:6px}
+.field input,.field textarea{
+  width:100%;background:var(--surface2);border:1px solid var(--line);border-radius:10px;
+  padding:12px;font-size:16px;color:var(--text);outline:none;
+}
+.field input:focus,.field textarea:focus{border-color:var(--accent)}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.primary{
+  width:100%;margin-top:6px;padding:15px;border-radius:12px;background:var(--accent);color:#1a1206;
+  font-size:15px;font-weight:500;letter-spacing:.1em;
+}
+.primary:disabled{opacity:.4}
+.ghost{width:100%;margin-top:10px;padding:12px;font-size:13px;color:var(--muted);letter-spacing:.1em}
+
+/* --- detail --- */
+#dCover{width:min(70vw,280px);aspect-ratio:1/1;border-radius:6px;object-fit:cover;display:block;margin:4px auto 16px;
+  box-shadow:0 16px 40px rgba(0,0,0,.6)}
+#dTitle{font-family:var(--serif);font-size:21px;font-weight:700;text-align:center;letter-spacing:.04em;line-height:1.4}
+#dArtist{text-align:center;font-size:13px;letter-spacing:.22em;color:var(--accent);margin-top:6px;text-transform:uppercase}
+#dMeta{text-align:center;font-size:12px;color:var(--muted);margin-top:8px;letter-spacing:.08em}
+#dMemo{font-family:"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  font-size:13px;line-height:1.9;color:var(--text);margin-top:14px;white-space:pre-wrap;
+  background:var(--surface2);border-radius:10px;padding:12px;display:none}
+.drow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}
+.dbtn{padding:13px;border-radius:12px;border:1px solid var(--line);background:var(--surface2);
+  font-size:13px;letter-spacing:.12em}
+.dbtn.del{color:var(--danger);border-color:rgba(217,83,79,.4)}
+
+#toast{
+  position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 100px);transform:translateX(-50%) translateY(10px);
+  background:var(--surface2);border:1px solid var(--line);border-radius:999px;
+  padding:10px 20px;font-size:13px;letter-spacing:.08em;opacity:0;transition:.3s;z-index:60;pointer-events:none;
+  white-space:nowrap;
+}
+#toast.show{opacity:1;transform:translateX(-50%)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>My Record Collection<small>VINYL ARCHIVE</small></h1>
+  <div class="hbtns">
+    <button class="iconbtn active" id="btnFlow" aria-label="カバーフロー表示">
+      <svg viewBox="0 0 24 24"><rect x="8" y="5" width="8" height="14" rx="1"/><path d="M4 7v10M20 7v10"/></svg>
+    </button>
+    <button class="iconbtn" id="btnGrid" aria-label="一覧表示">
+      <svg viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1"/><rect x="13" y="4" width="7" height="7" rx="1"/><rect x="4" y="13" width="7" height="7" rx="1"/><rect x="13" y="13" width="7" height="7" rx="1"/></svg>
+    </button>
+  </div>
+</header>
+
+<!-- coverflow -->
+<div id="flowView">
+  <div id="counter"></div>
+  <div id="stage"></div>
+  <div id="caption">
+    <div class="title" id="cTitle"></div>
+    <div class="artist" id="cArtist"></div>
+    <div class="meta" id="cMeta"></div>
+  </div>
+  <div id="empty">
+    <div class="ering"></div>
+    <p>まだレコードがありません。<br>右下の＋からジャケットを登録しましょう。</p>
+  </div>
+</div>
+
+<!-- grid -->
+<div id="gridView"><div id="grid"></div></div>
+
+<button id="fab" aria-label="レコードを追加">
+  <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+</button>
+
+<!-- add / edit sheet -->
+<div class="sheet" id="addSheet">
+  <div class="panel">
+    <div class="grip"></div>
+    <h2 id="formTitle">レコードを登録</h2>
+    <img id="preview" alt="ジャケットプレビュー">
+    <div class="pickrow">
+      <button class="pickbtn" id="pickCamera">
+        <svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>
+        カメラで撮影
+      </button>
+      <button class="pickbtn" id="pickRoll">
+        <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><circle cx="9" cy="9" r="1.6"/><path d="M4 17l5-5 4 4 3-3 4 4"/></svg>
+        写真から選択
+      </button>
+    </div>
+    <input type="file" id="fileCamera" accept="image/*" capture="environment" hidden>
+    <input type="file" id="fileRoll" accept="image/*" hidden>
+
+    <div class="field"><label>タイトル *</label><input id="fTitle" placeholder="Machine Head"></div>
+    <div class="field"><label>アーティスト *</label><input id="fArtist" placeholder="Deep Purple"></div>
+    <div class="frow">
+      <div class="field"><label>年</label><input id="fYear" inputmode="numeric" placeholder="1972"></div>
+      <div class="field"><label>ジャンル</label><input id="fGenre" placeholder="Hard Rock"></div>
+    </div>
+    <div class="field"><label>メモ</label><textarea id="fMemo" rows="2" placeholder="購入店・盤質・思い出など"></textarea></div>
+    <button class="primary" id="btnSave" disabled>登録する</button>
+    <button class="ghost" id="btnCancel">キャンセル</button>
+  </div>
+</div>
+
+<!-- detail sheet -->
+<div class="sheet" id="detailSheet">
+  <div class="panel">
+    <div class="grip"></div>
+    <img id="dCover" alt="">
+    <div id="dTitle"></div>
+    <div id="dArtist"></div>
+    <div id="dMeta"></div>
+    <div id="dMemo"></div>
+    <div class="drow">
+      <button class="dbtn" id="btnEdit">編集</button>
+      <button class="dbtn del" id="btnDelete">削除</button>
+    </div>
+    <button class="ghost" id="btnCloseDetail">閉じる</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+'use strict';
+/* ================= IndexedDB ================= */
+const DB_NAME='recordCollection', STORE='records';
+let db;
+function openDB(){
+  return new Promise((res,rej)=>{
+    const rq=indexedDB.open(DB_NAME,1);
+    rq.onupgradeneeded=e=>{
+      const d=e.target.result;
+      if(!d.objectStoreNames.contains(STORE)){
+        d.createObjectStore(STORE,{keyPath:'id',autoIncrement:true});
+      }
+    };
+    rq.onsuccess=e=>{db=e.target.result;res()};
+    rq.onerror=()=>rej(rq.error);
+  });
+}
+const tx=(mode)=>db.transaction(STORE,mode).objectStore(STORE);
+const dbAll=()=>new Promise((res,rej)=>{const r=tx('readonly').getAll();r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});
+const dbPut=(rec)=>new Promise((res,rej)=>{const r=tx('readwrite').put(rec);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});
+const dbDel=(id)=>new Promise((res,rej)=>{const r=tx('readwrite').delete(id);r.onsuccess=()=>res();r.onerror=()=>rej(r.error)});
+
+/* ================= state ================= */
+let records=[];       // {id,title,artist,year,genre,memo,image:Blob,createdAt}
+let urls=new Map();   // id -> objectURL
+let cur=0;            // coverflow index
+let editingId=null;
+let pendingBlob=null;
+
+const $=id=>document.getElementById(id);
+const stage=$('stage');
+
+function urlOf(rec){
+  if(!urls.has(rec.id)) urls.set(rec.id,URL.createObjectURL(rec.image));
+  return urls.get(rec.id);
+}
+function toast(msg){
+  const t=$('toast');t.textContent=msg;t.classList.add('show');
+  clearTimeout(t._tm);t._tm=setTimeout(()=>t.classList.remove('show'),1800);
+}
+
+/* ================= image処理: 正方形トリミング+縮小 ================= */
+function processImage(file){
+  return new Promise((res,rej)=>{
+    const img=new Image();
+    img.onload=()=>{
+      const side=Math.min(img.naturalWidth,img.naturalHeight);
+      const sx=(img.naturalWidth-side)/2, sy=(img.naturalHeight-side)/2;
+      const out=Math.min(side,1000);
+      const cv=document.createElement('canvas');cv.width=out;cv.height=out;
+      cv.getContext('2d').drawImage(img,sx,sy,side,side,0,0,out,out);
+      URL.revokeObjectURL(img.src);
+      cv.toBlob(b=>b?res(b):rej(new Error('encode failed')),'image/jpeg',0.86);
+    };
+    img.onerror=()=>rej(new Error('画像を読み込めません'));
+    img.src=URL.createObjectURL(file);
+  });
+}
+
+/* ================= coverflow ================= */
+function buildStage(){
+  stage.innerHTML='';
+  records.forEach((rec,i)=>{
+    const c=document.createElement('div');
+    c.className='card';c.dataset.i=i;
+    c.innerHTML=`<div class="disc"></div>
+      <div class="sleeve"><img src="${urlOf(rec)}" alt=""></div>
+      <div class="refl"><img src="${urlOf(rec)}" alt=""></div>`;
+    c.addEventListener('click',()=>{
+      if(dragMoved)return;
+      if(i===cur)openDetail(rec.id);else go(i);
+    });
+    stage.appendChild(c);
+  });
+  layout(0);
+  updateCaption();
+}
+function layout(dragOffset){
+  const cards=stage.children;
+  const gap=Math.min(window.innerWidth*0.34,150);
+  for(const c of cards){
+    const i=+c.dataset.i;
+    const d=i-cur-dragOffset;       // 実数オフセット
+    const ad=Math.abs(d);
+    const x=d*gap;
+    const rot=Math.max(-55,Math.min(55,-d*45));
+    const z=-ad*160;
+    const s=Math.max(.6,1-ad*.12);
+    c.style.transform=`translate(-50%,-50%) translateX(${x}px) translateZ(${z}px) rotateY(${rot}deg) scale(${s})`;
+    c.style.zIndex=String(100-Math.round(ad*10));
+    c.style.opacity=ad>3.5?0:String(1-ad*.18);
+    c.style.filter=`brightness(${Math.max(.45,1-ad*.28)})`;
+    c.classList.toggle('center',Math.abs(d)<.5);
+  }
+}
+function updateCaption(){
+  const has=records.length>0;
+  $('empty').style.display=has?'none':'flex';
+  $('counter').textContent=has?`${cur+1} / ${records.length}`:'';
+  const rec=records[cur];
+  $('cTitle').textContent=rec?rec.title:'';
+  $('cArtist').textContent=rec?rec.artist:'';
+  const meta=[rec?.year,rec?.genre].filter(Boolean).join(' ・ ');
+  $('cMeta').textContent=meta;
+}
+function go(i){
+  cur=Math.max(0,Math.min(records.length-1,i));
+  layout(0);updateCaption();
+}
+
+/* --- swipe --- */
+let dragStartX=0,dragging=false,dragMoved=false;
+const gapPx=()=>Math.min(window.innerWidth*0.34,150);
+stage.addEventListener('pointerdown',e=>{
+  if(!records.length)return;
+  dragging=true;dragMoved=false;dragStartX=e.clientX;
+  stage.classList.add('dragging');
+  stage.setPointerCapture(e.pointerId);
+});
+stage.addEventListener('pointermove',e=>{
+  if(!dragging)return;
+  const dx=e.clientX-dragStartX;
+  if(Math.abs(dx)>6)dragMoved=true;
+  layout(-dx/gapPx());
+});
+function endDrag(e){
+  if(!dragging)return;
+  dragging=false;stage.classList.remove('dragging');
+  const dx=e.clientX-dragStartX;
+  const off=-dx/gapPx();
+  go(cur+Math.round(off+0.2*Math.sign(off)));
+  setTimeout(()=>dragMoved=false,50);
+}
+stage.addEventListener('pointerup',endDrag);
+stage.addEventListener('pointercancel',endDrag);
+window.addEventListener('resize',()=>layout(0));
+
+/* ================= grid ================= */
+function buildGrid(){
+  const g=$('grid');g.innerHTML='';
+  records.forEach((rec,i)=>{
+    const cell=document.createElement('button');
+    cell.className='gcell';
+    cell.innerHTML=`<img src="${urlOf(rec)}" alt="${rec.title}">`;
+    cell.addEventListener('click',()=>openDetail(rec.id));
+    g.appendChild(cell);
+  });
+}
+
+/* ================= view切替 ================= */
+function showFlow(){
+  $('flowView').style.display='flex';$('gridView').style.display='none';
+  $('btnFlow').classList.add('active');$('btnGrid').classList.remove('active');
+  layout(0);
+}
+function showGrid(){
+  buildGrid();
+  $('flowView').style.display='none';$('gridView').style.display='block';
+  $('btnGrid').classList.add('active');$('btnFlow').classList.remove('active');
+}
+$('btnFlow').addEventListener('click',showFlow);
+$('btnGrid').addEventListener('click',showGrid);
+
+/* ================= add / edit ================= */
+function openForm(rec){
+  editingId=rec?rec.id:null;
+  pendingBlob=rec?rec.image:null;
+  $('formTitle').textContent=rec?'レコードを編集':'レコードを登録';
+  $('btnSave').textContent=rec?'保存する':'登録する';
+  $('fTitle').value=rec?.title||'';
+  $('fArtist').value=rec?.artist||'';
+  $('fYear').value=rec?.year||'';
+  $('fGenre').value=rec?.genre||'';
+  $('fMemo').value=rec?.memo||'';
+  const p=$('preview');
+  if(pendingBlob){p.src=URL.createObjectURL(pendingBlob);p.style.display='block';}
+  else{p.style.display='none';p.removeAttribute('src');}
+  validate();
+  $('addSheet').classList.add('open');
+}
+function closeForm(){$('addSheet').classList.remove('open')}
+function validate(){
+  $('btnSave').disabled=!(pendingBlob&&$('fTitle').value.trim()&&$('fArtist').value.trim());
+}
+['fTitle','fArtist'].forEach(id=>$(id).addEventListener('input',validate));
+
+$('fab').addEventListener('click',()=>openForm(null));
+$('btnCancel').addEventListener('click',closeForm);
+$('pickCamera').addEventListener('click',()=>$('fileCamera').click());
+$('pickRoll').addEventListener('click',()=>$('fileRoll').click());
+
+async function onFile(e){
+  const f=e.target.files[0];e.target.value='';
+  if(!f)return;
+  try{
+    pendingBlob=await processImage(f);
+    const p=$('preview');p.src=URL.createObjectURL(pendingBlob);p.style.display='block';
+    validate();
+  }catch(err){toast('画像の読み込みに失敗しました');}
+}
+$('fileCamera').addEventListener('change',onFile);
+$('fileRoll').addEventListener('change',onFile);
+
+$('btnSave').addEventListener('click',async()=>{
+  const rec={
+    title:$('fTitle').value.trim(),
+    artist:$('fArtist').value.trim(),
+    year:$('fYear').value.trim(),
+    genre:$('fGenre').value.trim(),
+    memo:$('fMemo').value.trim(),
+    image:pendingBlob,
+  };
+  try{
+    if(editingId!=null){
+      rec.id=editingId;
+      const old=records.find(r=>r.id===editingId);
+      rec.createdAt=old?.createdAt||Date.now();
+      await dbPut(rec);
+      if(urls.has(editingId)){URL.revokeObjectURL(urls.get(editingId));urls.delete(editingId);}
+      toast('保存しました');
+    }else{
+      rec.createdAt=Date.now();
+      const id=await dbPut(rec);
+      toast('登録しました');
+      records=await dbAll();
+      cur=records.findIndex(r=>r.id===id);
+    }
+    records=await dbAll();
+    if(cur>=records.length)cur=records.length-1;
+    closeForm();
+    refreshViews();
+  }catch(err){toast('保存に失敗しました');}
+});
+
+/* ================= detail ================= */
+let detailId=null;
+function openDetail(id){
+  const rec=records.find(r=>r.id===id);
+  if(!rec)return;
+  detailId=id;
+  $('dCover').src=urlOf(rec);
+  $('dTitle').textContent=rec.title;
+  $('dArtist').textContent=rec.artist;
+  $('dMeta').textContent=[rec.year,rec.genre].filter(Boolean).join(' ・ ');
+  const m=$('dMemo');
+  if(rec.memo){m.textContent=rec.memo;m.style.display='block'}else{m.style.display='none'}
+  $('detailSheet').classList.add('open');
+}
+$('btnCloseDetail').addEventListener('click',()=>$('detailSheet').classList.remove('open'));
+$('btnEdit').addEventListener('click',()=>{
+  const rec=records.find(r=>r.id===detailId);
+  $('detailSheet').classList.remove('open');
+  openForm(rec);
+});
+$('btnDelete').addEventListener('click',async()=>{
+  if(!confirm('このレコードを削除しますか?'))return;
+  await dbDel(detailId);
+  if(urls.has(detailId)){URL.revokeObjectURL(urls.get(detailId));urls.delete(detailId);}
+  records=await dbAll();
+  if(cur>=records.length)cur=Math.max(0,records.length-1);
+  $('detailSheet').classList.remove('open');
+  refreshViews();
+  toast('削除しました');
+});
+
+/* シート背景タップで閉じる */
+document.querySelectorAll('.sheet').forEach(s=>{
+  s.addEventListener('click',e=>{if(e.target===s)s.classList.remove('open')});
+});
+
+/* ================= refresh ================= */
+function refreshViews(){
+  buildStage();
+  if($('gridView').style.display==='block')buildGrid();
+}
+
+/* ================= init ================= */
+(async()=>{
+  try{
+    await openDB();
+    records=await dbAll();
+    records.sort((a,b)=>a.createdAt-b.createdAt);
+    cur=records.length?records.length-1:0;
+    buildStage();
+  }catch(err){
+    toast('データベースを開けませんでした');
+  }
+})();
+</script>
+</body>
+</html>

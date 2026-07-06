@@ -16,6 +16,7 @@
   --text:#f2ede3;
   --muted:#96909e;
   --accent:#e2a63d;
+  --want:#5aa7d6;
   --heart:#e0566b;
   --danger:#d9534f;
   --font:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
@@ -29,21 +30,17 @@ body{
 }
 button{font-family:inherit;color:inherit;background:none;border:none;cursor:pointer}
 input,textarea,select{font-family:var(--font)}
+a{color:var(--accent)}
 
 /* ===== header ===== */
 header{
   position:fixed;top:0;left:0;right:0;z-index:20;
-  padding:calc(env(safe-area-inset-top) + 14px) 14px 10px;
+  padding:calc(env(safe-area-inset-top) + 14px) 14px 8px;
   display:flex;align-items:center;justify-content:space-between;gap:8px;
-  background:linear-gradient(to bottom,rgba(14,13,16,.94),rgba(14,13,16,0));
+  background:linear-gradient(to bottom,rgba(14,13,16,.94),rgba(14,13,16,.6) 70%,rgba(14,13,16,0));
 }
-header h1{
-  font-size:21px;font-weight:800;letter-spacing:.02em;white-space:nowrap;
-}
-header h1 small{
-  display:block;font-weight:500;font-size:10px;
-  letter-spacing:.3em;color:var(--muted);margin-top:1px;
-}
+header h1{font-size:21px;font-weight:800;letter-spacing:.02em;white-space:nowrap}
+header h1 small{display:block;font-weight:500;font-size:10px;letter-spacing:.3em;color:var(--muted);margin-top:1px}
 .hbtns{display:flex;gap:7px;flex-shrink:0}
 .iconbtn{
   width:41px;height:41px;border-radius:12px;display:flex;align-items:center;justify-content:center;
@@ -54,15 +51,24 @@ header h1 small{
 .iconbtn.fav-on{background:var(--heart);border-color:var(--heart);color:#fff}
 .iconbtn.fav-on svg{fill:#fff}
 
+/* ===== 所有/購入予定 切替 ===== */
+#segWrap{
+  position:fixed;left:50%;transform:translateX(-50%);z-index:19;
+  top:calc(env(safe-area-inset-top) + 66px);
+  display:flex;background:var(--surface2);border:1px solid var(--line);border-radius:999px;padding:3px;
+}
+.seg{
+  padding:7px 20px;border-radius:999px;font-size:13.5px;font-weight:600;letter-spacing:.06em;color:var(--muted);
+}
+.seg.active[data-st="owned"]{background:var(--accent);color:#1a1206}
+.seg.active[data-st="want"]{background:var(--want);color:#0c1a24}
+
 /* ===== coverflow ===== */
 #flowView{position:fixed;inset:0;display:flex;flex-direction:column}
-#stage{
-  flex:1;position:relative;perspective:900px;perspective-origin:50% 42%;
-  touch-action:pan-y;overflow:hidden;
-}
+#stage{flex:1;position:relative;perspective:900px;perspective-origin:50% 45%;touch-action:pan-y;overflow:hidden}
 .card{
-  position:absolute;left:50%;top:40%;
-  width:min(64vw,300px);aspect-ratio:1/1;
+  position:absolute;left:50%;top:44%;
+  width:min(62vw,290px);aspect-ratio:1/1;
   transform-style:preserve-3d;
   transition:transform .45s cubic-bezier(.22,.9,.3,1),opacity .45s,filter .45s;
   will-change:transform;
@@ -78,8 +84,7 @@ header h1 small{
 }
 .card.center .disc{transform:translateX(16%)}
 .card .sleeve{
-  position:absolute;inset:0;border-radius:4px;overflow:hidden;
-  background:var(--surface2);
+  position:absolute;inset:0;border-radius:4px;overflow:hidden;background:var(--surface2);
   box-shadow:0 18px 46px rgba(0,0,0,.65),inset 0 0 0 1px rgba(255,255,255,.07);
 }
 .card .sleeve img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
@@ -91,35 +96,27 @@ header h1 small{
 }
 .card .refl img{width:100%;height:100%;object-fit:cover;object-position:top}
 
-#caption{
-  text-align:center;padding:0 24px calc(env(safe-area-inset-bottom) + 96px);
-  min-height:126px;
-}
+#caption{text-align:center;padding:0 24px calc(env(safe-area-inset-bottom) + 92px);min-height:122px}
 #caption .title{font-size:24px;font-weight:800;letter-spacing:.01em;line-height:1.35}
 #caption .title .hh{color:var(--heart);margin-left:6px;font-size:20px}
-#caption .artist{
-  margin-top:6px;font-size:14px;font-weight:600;letter-spacing:.18em;color:var(--accent);text-transform:uppercase;
-}
+#caption .artist{margin-top:6px;font-size:14px;font-weight:600;letter-spacing:.18em;color:var(--accent);text-transform:uppercase}
 #caption .meta{margin-top:6px;font-size:12.5px;letter-spacing:.1em;color:var(--muted)}
 #counter{
-  position:absolute;top:calc(env(safe-area-inset-top) + 72px);left:0;right:0;
+  position:absolute;top:calc(env(safe-area-inset-top) + 112px);left:0;right:0;
   text-align:center;font-size:12px;letter-spacing:.28em;color:var(--muted);
 }
 
 /* ===== grid ===== */
 #gridView{
   position:fixed;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch;
-  padding:calc(env(safe-area-inset-top) + 80px) 14px calc(env(safe-area-inset-bottom) + 96px);
+  padding:calc(env(safe-area-inset-top) + 118px) 14px calc(env(safe-area-inset-bottom) + 96px);
   display:none;
 }
 #grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .gcell{aspect-ratio:1/1;border-radius:6px;overflow:hidden;background:var(--surface2);
   box-shadow:0 4px 14px rgba(0,0,0,.4);position:relative}
 .gcell img{width:100%;height:100%;object-fit:cover;display:block}
-.gcell .gfav{
-  position:absolute;top:5px;right:5px;width:20px;height:20px;
-  filter:drop-shadow(0 1px 3px rgba(0,0,0,.7));
-}
+.gcell .gfav{position:absolute;top:5px;right:5px;width:20px;height:20px;filter:drop-shadow(0 1px 3px rgba(0,0,0,.7))}
 .gcell .gfav svg{width:100%;height:100%;fill:var(--heart);stroke:none}
 
 /* ===== empty ===== */
@@ -138,8 +135,7 @@ header h1 small{
 /* ===== FAB ===== */
 #fab{
   position:fixed;right:20px;bottom:calc(env(safe-area-inset-bottom) + 24px);z-index:25;
-  width:58px;height:58px;border-radius:50%;
-  background:var(--accent);color:#1a1206;
+  width:58px;height:58px;border-radius:50%;background:var(--accent);color:#1a1206;
   box-shadow:0 10px 28px rgba(226,166,61,.35);
   display:flex;align-items:center;justify-content:center;
 }
@@ -153,7 +149,7 @@ header h1 small{
 .sheet.open{display:flex}
 .panel{
   background:var(--surface);border-radius:20px 20px 0 0;border-top:1px solid var(--line);
-  max-height:92dvh;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  max-height:92dvh;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;
   padding:10px 20px calc(env(safe-area-inset-bottom) + 20px);
   animation:up .3s cubic-bezier(.22,.9,.3,1);
 }
@@ -162,6 +158,15 @@ header h1 small{
 .panel h2{font-size:18px;font-weight:800;letter-spacing:.03em;margin-bottom:16px}
 
 /* --- add form --- */
+#csvBtn{
+  display:flex;align-items:center;justify-content:center;gap:8px;width:100%;
+  border:1px solid var(--line);border-radius:12px;background:var(--surface2);
+  padding:13px;font-size:14px;letter-spacing:.05em;margin-bottom:6px;
+}
+#csvBtn svg{width:19px;height:19px;stroke:var(--want);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.csvhint{font-size:11.5px;color:var(--muted);line-height:1.7;margin-bottom:14px;text-align:center}
+.orline{display:flex;align-items:center;gap:12px;color:var(--muted);font-size:12px;margin:2px 0 14px}
+.orline::before,.orline::after{content:'';flex:1;height:1px;background:var(--line)}
 .pickrow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
 .pickbtn{
   border:1px dashed #4a4452;border-radius:12px;background:var(--surface2);
@@ -185,6 +190,13 @@ header h1 small{
 }
 .field input:focus,.field textarea:focus,.field select:focus{border-color:var(--accent)}
 .frow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.statusrow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.stbtn{
+  padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--surface2);
+  font-size:14.5px;font-weight:600;letter-spacing:.06em;color:var(--muted);
+}
+.stbtn.active[data-st="owned"]{background:var(--accent);border-color:var(--accent);color:#1a1206}
+.stbtn.active[data-st="want"]{background:var(--want);border-color:var(--want);color:#0c1a24}
 .primary{
   width:100%;margin-top:6px;padding:15px;border-radius:12px;background:var(--accent);color:#1a1206;
   font-size:16px;font-weight:700;letter-spacing:.08em;
@@ -193,64 +205,72 @@ header h1 small{
 .ghost{width:100%;margin-top:10px;padding:12px;font-size:14px;color:var(--muted);letter-spacing:.08em}
 
 /* --- detail --- */
-#dHead{position:relative}
-#dFav{
-  position:absolute;top:0;right:0;width:44px;height:44px;
-  display:flex;align-items:center;justify-content:center;
-}
-#dFav svg{width:28px;height:28px;stroke:var(--heart);stroke-width:1.9;fill:none;transition:.2s}
-#dFav.on svg{fill:var(--heart)}
-#dCover{width:min(70vw,280px);aspect-ratio:1/1;border-radius:6px;object-fit:cover;display:block;margin:4px auto 16px;
+#dCover{width:min(66vw,270px);aspect-ratio:1/1;border-radius:6px;object-fit:cover;display:block;margin:4px auto 10px;
   box-shadow:0 16px 40px rgba(0,0,0,.6)}
+#dFav{
+  display:flex;align-items:center;justify-content:center;gap:7px;
+  margin:0 auto 12px;padding:8px 18px;border-radius:999px;
+  border:1px solid var(--line);background:var(--surface2);font-size:13px;color:var(--muted);
+}
+#dFav svg{width:21px;height:21px;stroke:var(--heart);stroke-width:1.9;fill:none;transition:.2s}
+#dFav.on{border-color:rgba(224,86,107,.5);color:var(--heart)}
+#dFav.on svg{fill:var(--heart)}
 #dTitle{font-size:22px;font-weight:800;text-align:center;letter-spacing:.01em;line-height:1.4}
 #dArtist{text-align:center;font-size:14px;font-weight:600;letter-spacing:.18em;color:var(--accent);margin-top:6px;text-transform:uppercase}
 #dMeta{text-align:center;font-size:13px;color:var(--muted);margin-top:8px;letter-spacing:.06em}
-#dMemo{font-size:14px;line-height:1.9;color:var(--text);margin-top:14px;white-space:pre-wrap;
+#dStatus{
+  display:block;width:fit-content;margin:10px auto 0;padding:4px 14px;border-radius:999px;
+  font-size:11.5px;font-weight:700;letter-spacing:.14em;
+}
+#dStatus.owned{background:rgba(226,166,61,.16);color:var(--accent);border:1px solid rgba(226,166,61,.4)}
+#dStatus.want{background:rgba(90,167,214,.14);color:var(--want);border:1px solid rgba(90,167,214,.4)}
+#dLink{
+  display:none;align-items:center;gap:8px;margin-top:14px;padding:12px;
+  background:var(--surface2);border-radius:10px;max-width:100%;
+}
+#dLink svg{width:17px;height:17px;flex-shrink:0;stroke:var(--accent);fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+#dLink a{
+  flex:1;min-width:0;font-size:14px;text-decoration:none;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+#dMemo{font-size:14px;line-height:1.9;color:var(--text);margin-top:12px;white-space:pre-wrap;word-break:break-word;
   background:var(--surface2);border-radius:10px;padding:12px;display:none}
 .drow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}
-.dbtn{padding:13px;border-radius:12px;border:1px solid var(--line);background:var(--surface2);
-  font-size:14px;letter-spacing:.1em}
+.dbtn{padding:13px;border-radius:12px;border:1px solid var(--line);background:var(--surface2);font-size:14px;letter-spacing:.1em}
 .dbtn.del{color:var(--danger);border-color:rgba(217,83,79,.4)}
 
 /* --- search --- */
 #searchBox{position:relative;margin-bottom:14px}
-#searchBox svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);
-  width:18px;height:18px;stroke:var(--muted);fill:none;stroke-width:2;stroke-linecap:round}
+#searchBox svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);width:18px;height:18px;stroke:var(--muted);fill:none;stroke-width:2;stroke-linecap:round}
 #searchInput{
   width:100%;background:var(--surface2);border:1px solid var(--line);border-radius:12px;
   padding:13px 13px 13px 42px;font-size:17px;color:var(--text);outline:none;
 }
 #searchInput:focus{border-color:var(--accent)}
 #searchResults{min-height:200px}
-.srow{
-  display:flex;align-items:center;gap:12px;width:100%;text-align:left;
-  padding:9px 4px;border-bottom:1px solid var(--line);
-}
+.srow{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:9px 4px;border-bottom:1px solid var(--line)}
 .srow img{width:52px;height:52px;border-radius:5px;object-fit:cover;flex-shrink:0;background:var(--surface2)}
-.srow .st{font-size:16px;font-weight:600;line-height:1.3}
-.srow .sa{font-size:13px;color:var(--muted);margin-top:2px}
+.srow .sc{min-width:0}
+.srow .st{font-size:16px;font-weight:600;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.srow .sa{font-size:13px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stag{font-size:10px;font-weight:700;letter-spacing:.08em;padding:2px 7px;border-radius:99px;margin-left:6px;vertical-align:2px}
+.stag.want{background:rgba(90,167,214,.14);color:var(--want)}
 .srow .sh{margin-left:auto;flex-shrink:0}
 .srow .sh svg{width:17px;height:17px;fill:var(--heart);stroke:none}
 .noresult{color:var(--muted);font-size:14px;text-align:center;padding:30px 0}
 
 /* --- sort --- */
-.sortopt{
-  display:flex;align-items:center;justify-content:space-between;width:100%;
-  padding:15px 6px;border-bottom:1px solid var(--line);font-size:16px;
-}
+.sortopt{display:flex;align-items:center;justify-content:space-between;width:100%;padding:15px 6px;border-bottom:1px solid var(--line);font-size:16px}
 .sortopt .chk{color:var(--accent);font-weight:700;font-size:15px}
 .dirrow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
-.dirbtn{
-  padding:13px;border-radius:12px;border:1px solid var(--line);background:var(--surface2);
-  font-size:15px;letter-spacing:.06em;
-}
+.dirbtn{padding:13px;border-radius:12px;border:1px solid var(--line);background:var(--surface2);font-size:15px;letter-spacing:.06em}
 .dirbtn.active{background:var(--accent);border-color:var(--accent);color:#1a1206;font-weight:700}
 
 #toast{
   position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 100px);transform:translateX(-50%) translateY(10px);
   background:var(--surface2);border:1px solid var(--line);border-radius:999px;
   padding:10px 20px;font-size:14px;letter-spacing:.06em;opacity:0;transition:.3s;z-index:60;pointer-events:none;
-  white-space:nowrap;
+  max-width:88vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
 #toast.show{opacity:1;transform:translateX(-50%)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
@@ -277,6 +297,12 @@ header h1 small{
   </div>
 </header>
 
+<!-- 所有 / 購入予定 -->
+<div id="segWrap">
+  <button class="seg active" data-st="owned">所有</button>
+  <button class="seg" data-st="want">購入予定</button>
+</div>
+
 <!-- coverflow -->
 <div id="flowView">
   <div id="counter"></div>
@@ -288,7 +314,7 @@ header h1 small{
   </div>
   <div id="empty">
     <div class="ering"></div>
-    <p id="emptyMsg">まだレコードがありません。<br>右下の＋からジャケットを登録しましょう。</p>
+    <p id="emptyMsg"></p>
   </div>
 </div>
 
@@ -304,6 +330,17 @@ header h1 small{
   <div class="panel">
     <div class="grip"></div>
     <h2 id="formTitle">レコードを登録</h2>
+
+    <div id="csvArea">
+      <button id="csvBtn">
+        <svg viewBox="0 0 24 24"><path d="M12 3v12M12 15l-4-4M12 15l4-4"/><path d="M4 17v3h16v-3"/></svg>
+        CSVファイルから一括登録
+      </button>
+      <div class="csvhint">列: タイトル, アーティスト, 年, ジャンル, メモ, URL, 区分(所有/購入予定), お気に入り(1)<br>1行目はヘッダー。UTF-8 / Shift_JIS 対応</div>
+      <input type="file" id="fileCSV" accept=".csv,text/csv" hidden>
+      <div class="orline">または個別に登録</div>
+    </div>
+
     <img id="preview" alt="ジャケットプレビュー">
     <div class="pickrow">
       <button class="pickbtn" id="pickCamera">
@@ -318,12 +355,18 @@ header h1 small{
     <input type="file" id="fileCamera" accept="image/*" capture="environment" hidden>
     <input type="file" id="fileRoll" accept="image/*" hidden>
 
+    <div class="statusrow">
+      <button class="stbtn active" data-st="owned">所有</button>
+      <button class="stbtn" data-st="want">購入予定</button>
+    </div>
+
     <div class="field"><label>タイトル *</label><input id="fTitle" placeholder="Machine Head"></div>
     <div class="field"><label>アーティスト *</label><input id="fArtist" placeholder="Deep Purple"></div>
     <div class="frow">
       <div class="field"><label>年</label><select id="fYear"></select></div>
       <div class="field"><label>ジャンル</label><select id="fGenre"></select></div>
     </div>
+    <div class="field"><label>URL</label><input id="fUrl" type="url" inputmode="url" placeholder="https://..."></div>
     <div class="field"><label>メモ</label><textarea id="fMemo" rows="2" placeholder="購入店・盤質・思い出など"></textarea></div>
     <button class="primary" id="btnSave" disabled>登録する</button>
     <button class="ghost" id="btnCancel">キャンセル</button>
@@ -334,15 +377,19 @@ header h1 small{
 <div class="sheet" id="detailSheet">
   <div class="panel">
     <div class="grip"></div>
-    <div id="dHead">
-      <button id="dFav" aria-label="お気に入り">
-        <svg viewBox="0 0 24 24"><path d="M12 20s-7-4.6-9.2-8.5C1.2 8.6 2.9 5 6.4 5c2 0 3.5 1.1 4.3 2.6h2.6C14.1 6.1 15.6 5 17.6 5c3.5 0 5.2 3.6 3.6 6.5C19 15.4 12 20 12 20z"/></svg>
-      </button>
-      <img id="dCover" alt="">
-    </div>
+    <img id="dCover" alt="">
+    <button id="dFav" aria-label="お気に入り">
+      <svg viewBox="0 0 24 24"><path d="M12 20s-7-4.6-9.2-8.5C1.2 8.6 2.9 5 6.4 5c2 0 3.5 1.1 4.3 2.6h2.6C14.1 6.1 15.6 5 17.6 5c3.5 0 5.2 3.6 3.6 6.5C19 15.4 12 20 12 20z"/></svg>
+      <span id="dFavLabel">お気に入り</span>
+    </button>
     <div id="dTitle"></div>
     <div id="dArtist"></div>
     <div id="dMeta"></div>
+    <span id="dStatus"></span>
+    <div id="dLink">
+      <svg viewBox="0 0 24 24"><path d="M10 14a4 4 0 005.7 0l3-3a4 4 0 00-5.7-5.7l-1.2 1.2"/><path d="M14 10a4 4 0 00-5.7 0l-3 3a4 4 0 005.7 5.7l1.2-1.2"/></svg>
+      <a id="dLinkA" href="#" target="_blank" rel="noopener"></a>
+    </div>
     <div id="dMemo"></div>
     <div class="drow">
       <button class="dbtn" id="btnEdit">編集</button>
@@ -396,6 +443,16 @@ const SORTS=[
   {key:'title',  label:'アルバム名順'},
   {key:'year',   label:'年代順'},
 ];
+const HMAP={
+  title:['title','タイトル','アルバム','アルバム名','album'],
+  artist:['artist','アーティスト'],
+  year:['year','年','年代'],
+  genre:['genre','ジャンル'],
+  memo:['memo','メモ','備考','notes'],
+  url:['url','リンク','link'],
+  status:['status','区分','ステータス'],
+  fav:['fav','favorite','お気に入り'],
+};
 
 /* ================= IndexedDB ================= */
 const DB_NAME='recordCollection', STORE='records';
@@ -418,29 +475,56 @@ const dbDel=(id)=>new Promise((res,rej)=>{const r=tx('readwrite').delete(id);r.o
 
 /* ================= state ================= */
 let records=[];
-let urls=new Map();
+let urls=new Map();       // id -> objectURL / data URI
 let cur=0;
 let editingId=null, pendingBlob=null, detailId=null;
 let favOnly=false;
+let curStatus='owned';    // 'owned' | 'want'
+let formStatus='owned';
 let sortKey=localStorage.getItem('ve_sortKey')||'created';
 let sortDir=localStorage.getItem('ve_sortDir')||'asc';
 let viewMode='flow';
 
 const $=id=>document.getElementById(id);
 const stage=$('stage');
+const norm=r=>{if(!r.status)r.status='owned';return r};
 
-function urlOf(rec){
-  if(!urls.has(rec.id)) urls.set(rec.id,URL.createObjectURL(rec.image));
-  return urls.get(rec.id);
-}
+function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
 function toast(msg){
   const t=$('toast');t.textContent=msg;t.classList.add('show');
-  clearTimeout(t._tm);t._tm=setTimeout(()=>t.classList.remove('show'),1800);
+  clearTimeout(t._tm);t._tm=setTimeout(()=>t.classList.remove('show'),2200);
 }
 
-/* ================= 表示対象リスト(フィルタ+並べ替え) ================= */
+/* ===== ジャケット画像 / プレースホルダー ===== */
+function placeholderURI(rec){
+  const t=esc(rec.title).slice(0,24), a=esc(rec.artist).slice(0,24);
+  const hue=[...rec.title].reduce((s,c)=>s+c.charCodeAt(0),0)%360;
+  const svg=`<svg xmlns='http://www.w3.org/2000/svg' width='400' height='400'>
+    <rect width='400' height='400' fill='hsl(${hue},18%,16%)'/>
+    <circle cx='200' cy='185' r='95' fill='none' stroke='hsl(${hue},30%,32%)' stroke-width='2'/>
+    <circle cx='200' cy='185' r='60' fill='none' stroke='hsl(${hue},30%,28%)' stroke-width='1.5'/>
+    <circle cx='200' cy='185' r='24' fill='hsl(${hue},40%,38%)'/>
+    <text x='200' y='320' text-anchor='middle' font-family='sans-serif' font-size='24' font-weight='bold' fill='#e8e2d6'>${t}</text>
+    <text x='200' y='352' text-anchor='middle' font-family='sans-serif' font-size='17' fill='#96909e'>${a}</text>
+  </svg>`;
+  return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
+}
+function urlOf(rec){
+  if(!urls.has(rec.id)){
+    urls.set(rec.id, rec.image instanceof Blob ? URL.createObjectURL(rec.image) : placeholderURI(rec));
+  }
+  return urls.get(rec.id);
+}
+function dropUrl(id){
+  const u=urls.get(id);
+  if(u&&u.startsWith('blob:'))URL.revokeObjectURL(u);
+  urls.delete(id);
+}
+
+/* ================= 表示対象リスト ================= */
 function visible(){
-  let list=favOnly?records.filter(r=>r.fav):records.slice();
+  let list=records.filter(r=>r.status===curStatus);
+  if(favOnly)list=list.filter(r=>r.fav);
   const dir=sortDir==='asc'?1:-1;
   list.sort((a,b)=>{
     let v=0;
@@ -453,7 +537,7 @@ function visible(){
   return list;
 }
 
-/* ================= 画像処理: 正方形トリミング+縮小 ================= */
+/* ================= 画像処理 ================= */
 function processImage(file){
   return new Promise((res,rej)=>{
     const img=new Image();
@@ -509,8 +593,9 @@ function layout(dragOffset){
 function updateCaption(){
   const has=flowList.length>0;
   $('empty').style.display=has?'none':'flex';
-  $('emptyMsg').innerHTML=favOnly
-    ?'お気に入りのレコードがありません。<br>詳細画面のハートで登録できます。'
+  $('emptyMsg').innerHTML=
+    favOnly?'お気に入りのレコードがありません。<br>詳細画面のハートで登録できます。'
+    :curStatus==='want'?'購入予定のレコードがありません。<br>＋から「購入予定」で登録できます。'
     :'まだレコードがありません。<br>右下の＋からジャケットを登録しましょう。';
   $('counter').textContent=has?`${cur+1} / ${flowList.length}`:'';
   const rec=flowList[cur];
@@ -518,7 +603,6 @@ function updateCaption(){
   $('cArtist').textContent=rec?rec.artist:'';
   $('cMeta').textContent=rec?[rec.year,rec.genre].filter(Boolean).join(' ・ '):'';
 }
-function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
 function go(i){
   cur=Math.max(0,Math.min(flowList.length-1,i));
   layout(0);updateCaption();
@@ -563,7 +647,7 @@ function buildGrid(){
   });
 }
 
-/* ================= 表示切替 / お気に入りフィルタ ================= */
+/* ================= 表示切替 ================= */
 function refreshViews(){
   if(viewMode==='flow'){buildStage()}else{buildGrid();flowList=visible();}
 }
@@ -579,11 +663,24 @@ $('btnView').addEventListener('click',()=>{
 $('btnFav').addEventListener('click',()=>{
   favOnly=!favOnly;
   $('btnFav').classList.toggle('fav-on',favOnly);
-  cur=0;
-  refreshViews();
+  cur=0;refreshViews();
+});
+/* 所有/購入予定 */
+document.querySelectorAll('#segWrap .seg').forEach(b=>{
+  b.addEventListener('click',()=>{
+    if(curStatus===b.dataset.st)return;
+    curStatus=b.dataset.st;
+    document.querySelectorAll('#segWrap .seg').forEach(x=>x.classList.toggle('active',x===b));
+    cur=0;refreshViews();
+  });
 });
 
 /* ================= 登録 / 編集 ================= */
+function ensureOption(sel,val){
+  if(val&&![...sel.options].some(o=>o.value===val)){
+    sel.insertAdjacentHTML('beforeend',`<option>${esc(val)}</option>`);
+  }
+}
 function initSelects(){
   const y=$('fYear');
   y.innerHTML='<option value="">未設定</option>';
@@ -592,16 +689,28 @@ function initSelects(){
   const g=$('fGenre');
   g.innerHTML='<option value="">未設定</option>'+GENRES.map(x=>`<option>${x}</option>`).join('');
 }
+function setFormStatus(st){
+  formStatus=st;
+  document.querySelectorAll('.stbtn').forEach(b=>b.classList.toggle('active',b.dataset.st===st));
+}
+document.querySelectorAll('.stbtn').forEach(b=>{
+  b.addEventListener('click',()=>setFormStatus(b.dataset.st));
+});
 function openForm(rec){
   editingId=rec?rec.id:null;
-  pendingBlob=rec?rec.image:null;
+  pendingBlob=rec&&rec.image instanceof Blob?rec.image:null;
+  $('csvArea').style.display=rec?'none':'block';
   $('formTitle').textContent=rec?'レコードを編集':'レコードを登録';
   $('btnSave').textContent=rec?'保存する':'登録する';
   $('fTitle').value=rec?.title||'';
   $('fArtist').value=rec?.artist||'';
+  ensureOption($('fYear'),rec?.year);
+  ensureOption($('fGenre'),rec?.genre);
   $('fYear').value=rec?.year||'';
   $('fGenre').value=rec?.genre||'';
+  $('fUrl').value=rec?.url||'';
   $('fMemo').value=rec?.memo||'';
+  setFormStatus(rec?rec.status:curStatus);
   const p=$('preview');
   if(pendingBlob){p.src=URL.createObjectURL(pendingBlob);p.style.display='block';}
   else{p.style.display='none';p.removeAttribute('src');}
@@ -610,7 +719,7 @@ function openForm(rec){
 }
 function closeForm(){$('addSheet').classList.remove('open')}
 function validate(){
-  $('btnSave').disabled=!(pendingBlob&&$('fTitle').value.trim()&&$('fArtist').value.trim());
+  $('btnSave').disabled=!($('fTitle').value.trim()&&$('fArtist').value.trim());
 }
 ['fTitle','fArtist'].forEach(id=>$(id).addEventListener('input',validate));
 
@@ -632,12 +741,16 @@ $('fileCamera').addEventListener('change',onFile);
 $('fileRoll').addEventListener('change',onFile);
 
 $('btnSave').addEventListener('click',async()=>{
+  let url=$('fUrl').value.trim();
+  if(url&&!/^https?:\/\//i.test(url))url='https://'+url;
   const rec={
     title:$('fTitle').value.trim(),
     artist:$('fArtist').value.trim(),
     year:$('fYear').value,
     genre:$('fGenre').value,
+    url,
     memo:$('fMemo').value.trim(),
+    status:formStatus,
     image:pendingBlob,
   };
   try{
@@ -648,7 +761,7 @@ $('btnSave').addEventListener('click',async()=>{
       rec.createdAt=old?.createdAt||Date.now();
       rec.fav=old?.fav||false;
       await dbPut(rec);
-      if(urls.has(editingId)){URL.revokeObjectURL(urls.get(editingId));urls.delete(editingId);}
+      dropUrl(editingId);
       toast('保存しました');
     }else{
       rec.createdAt=Date.now();
@@ -656,9 +769,9 @@ $('btnSave').addEventListener('click',async()=>{
       newId=await dbPut(rec);
       toast('登録しました');
     }
-    records=await dbAll();
+    records=(await dbAll()).map(norm);
     closeForm();
-    if(newId!=null){
+    if(newId!=null&&rec.status===curStatus){
       const idx=visible().findIndex(r=>r.id===newId);
       if(idx>=0)cur=idx;
     }
@@ -666,7 +779,85 @@ $('btnSave').addEventListener('click',async()=>{
   }catch(err){toast('保存に失敗しました');}
 });
 
-/* ================= 詳細 / お気に入り ================= */
+/* ================= CSV一括登録 ================= */
+$('csvBtn').addEventListener('click',()=>$('fileCSV').click());
+$('fileCSV').addEventListener('change',async e=>{
+  const f=e.target.files[0];e.target.value='';
+  if(!f)return;
+  try{
+    const text=await readCSVText(f);
+    const rows=parseCSV(text);
+    if(rows.length<2){toast('データ行がありません');return;}
+    const map=mapHeader(rows[0]);
+    if(map.title==null||map.artist==null){
+      toast('ヘッダーに「タイトル」「アーティスト」が必要です');return;
+    }
+    let ok=0,skip=0;
+    const base=Date.now();
+    for(let i=1;i<rows.length;i++){
+      const r=rows[i];
+      const get=k=>map[k]!=null?String(r[map[k]]??'').trim():'';
+      const title=get('title'),artist=get('artist');
+      if(!title||!artist){skip++;continue;}
+      let url=get('url');
+      if(url&&!/^https?:\/\//i.test(url))url='https://'+url;
+      const stv=get('status');
+      const status=/購入|欲|want|wish/i.test(stv)?'want':'owned';
+      const favv=get('fav');
+      const fav=/^(1|true|yes|y|○|〇|◯)$/i.test(favv);
+      await dbPut({
+        title,artist,
+        year:get('year'),genre:get('genre'),memo:get('memo'),url,
+        status,fav,image:null,createdAt:base+i,
+      });
+      ok++;
+    }
+    records=(await dbAll()).map(norm);
+    closeForm();
+    refreshViews();
+    toast(`${ok}件登録しました${skip?`(スキップ${skip}件)`:''}`);
+  }catch(err){toast('CSVの読み込みに失敗しました');}
+});
+async function readCSVText(file){
+  const buf=await file.arrayBuffer();
+  let text=new TextDecoder('utf-8').decode(buf);
+  if(text.includes('\uFFFD')){
+    try{text=new TextDecoder('shift_jis').decode(buf);}catch(e){}
+  }
+  if(text.charCodeAt(0)===0xFEFF)text=text.slice(1);
+  return text;
+}
+function parseCSV(text){
+  const rows=[];let row=[],cell='',q=false;
+  for(let i=0;i<text.length;i++){
+    const ch=text[i];
+    if(q){
+      if(ch==='"'){if(text[i+1]==='"'){cell+='"';i++;}else q=false;}
+      else cell+=ch;
+    }else{
+      if(ch==='"')q=true;
+      else if(ch===','){row.push(cell);cell='';}
+      else if(ch==='\n'||ch==='\r'){
+        if(ch==='\r'&&text[i+1]==='\n')i++;
+        row.push(cell);rows.push(row);row=[];cell='';
+      }else cell+=ch;
+    }
+  }
+  if(cell!==''||row.length){row.push(cell);rows.push(row);}
+  return rows.filter(r=>r.some(c=>String(c).trim()!==''));
+}
+function mapHeader(h){
+  const map={};
+  h.forEach((c,i)=>{
+    const key=String(c).trim().toLowerCase();
+    for(const[k,names]of Object.entries(HMAP)){
+      if(map[k]==null&&names.includes(key))map[k]=i;
+    }
+  });
+  return map;
+}
+
+/* ================= 詳細 ================= */
 function openDetail(id){
   const rec=records.find(r=>r.id===id);
   if(!rec)return;
@@ -675,9 +866,19 @@ function openDetail(id){
   $('dTitle').textContent=rec.title;
   $('dArtist').textContent=rec.artist;
   $('dMeta').textContent=[rec.year,rec.genre].filter(Boolean).join(' ・ ');
+  const st=$('dStatus');
+  st.textContent=rec.status==='want'?'購入予定':'所有';
+  st.className=rec.status==='want'?'want':'owned';
+  const lk=$('dLink');
+  if(rec.url){
+    $('dLinkA').href=rec.url;
+    $('dLinkA').textContent=rec.url.replace(/^https?:\/\//,'');
+    lk.style.display='flex';
+  }else lk.style.display='none';
   const m=$('dMemo');
   if(rec.memo){m.textContent=rec.memo;m.style.display='block'}else{m.style.display='none'}
   $('dFav').classList.toggle('on',!!rec.fav);
+  $('dFavLabel').textContent=rec.fav?'お気に入り登録済み':'お気に入り';
   $('detailSheet').classList.add('open');
 }
 $('dFav').addEventListener('click',async()=>{
@@ -686,6 +887,7 @@ $('dFav').addEventListener('click',async()=>{
   rec.fav=!rec.fav;
   await dbPut(rec);
   $('dFav').classList.toggle('on',rec.fav);
+  $('dFavLabel').textContent=rec.fav?'お気に入り登録済み':'お気に入り';
   toast(rec.fav?'お気に入りに追加しました':'お気に入りを解除しました');
   refreshViews();
 });
@@ -698,8 +900,8 @@ $('btnEdit').addEventListener('click',()=>{
 $('btnDelete').addEventListener('click',async()=>{
   if(!confirm('このレコードを削除しますか?'))return;
   await dbDel(detailId);
-  if(urls.has(detailId)){URL.revokeObjectURL(urls.get(detailId));urls.delete(detailId);}
-  records=await dbAll();
+  dropUrl(detailId);
+  records=(await dbAll()).map(norm);
   $('detailSheet').classList.remove('open');
   refreshViews();
   toast('削除しました');
@@ -727,7 +929,8 @@ function renderSearch(q){
     const row=document.createElement('button');
     row.className='srow';
     row.innerHTML=`<img src="${urlOf(rec)}" alt="">
-      <div><div class="st">${esc(rec.title)}</div><div class="sa">${esc(rec.artist)}${rec.year?' ・ '+rec.year:''}</div></div>`+
+      <div class="sc"><div class="st">${esc(rec.title)}${rec.status==='want'?'<span class="stag want">購入予定</span>':''}</div>
+      <div class="sa">${esc(rec.artist)}${rec.year?' ・ '+rec.year:''}</div></div>`+
       (rec.fav?'<span class="sh"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.6-9.2-8.5C1.2 8.6 2.9 5 6.4 5c2 0 3.5 1.1 4.3 2.6h2.6C14.1 6.1 15.6 5 17.6 5c3.5 0 5.2 3.6 3.6 6.5C19 15.4 12 20 12 20z"/></svg></span>':'');
     row.addEventListener('click',()=>{
       $('searchSheet').classList.remove('open');
@@ -747,9 +950,7 @@ function renderSortOpts(){
     b.addEventListener('click',()=>{sortKey=s.key;applySort()});
     box.appendChild(b);
   });
-  document.querySelectorAll('.dirbtn').forEach(b=>{
-    b.classList.toggle('active',b.dataset.dir===sortDir);
-  });
+  document.querySelectorAll('.dirbtn').forEach(b=>b.classList.toggle('active',b.dataset.dir===sortDir));
 }
 document.querySelectorAll('.dirbtn').forEach(b=>{
   b.addEventListener('click',()=>{sortDir=b.dataset.dir;applySort()});
@@ -758,8 +959,7 @@ function applySort(){
   localStorage.setItem('ve_sortKey',sortKey);
   localStorage.setItem('ve_sortDir',sortDir);
   renderSortOpts();
-  cur=0;
-  refreshViews();
+  cur=0;refreshViews();
 }
 $('btnSort').addEventListener('click',()=>{renderSortOpts();$('sortSheet').classList.add('open')});
 $('btnCloseSort').addEventListener('click',()=>$('sortSheet').classList.remove('open'));
@@ -774,7 +974,7 @@ document.querySelectorAll('.sheet').forEach(s=>{
   initSelects();
   try{
     await openDB();
-    records=await dbAll();
+    records=(await dbAll()).map(norm);
     cur=Math.max(0,visible().length-1);
     buildStage();
   }catch(err){

@@ -14,9 +14,9 @@
   --surface:#46608f;
   --surface2:#516b9e;
   --line:#6a83b8;
-  --text:#f4f7fc;
-  --muted:#c6d1e8;
-  --accent:#a8ccff;
+  --text:#ffffff;
+  --muted:#dde5f6;
+  --accent:#bcd8ff;
   --btn:#1e3560;
   --want:#58cfc0;
   --heart:#f06a80;
@@ -37,15 +37,15 @@ a{color:var(--accent)}
 /* ===== header ===== */
 header{
   position:fixed;top:0;left:0;right:0;z-index:20;
-  padding:calc(env(safe-area-inset-top) + 14px) 14px 8px;
+  padding:calc(env(safe-area-inset-top) + 14px) 20px 8px;
   display:flex;align-items:center;justify-content:space-between;gap:8px;
   background:linear-gradient(to bottom,rgba(62,85,136,.95),rgba(62,85,136,.6) 70%,rgba(62,85,136,0));
 }
-header h1{font-size:23px;font-weight:800;letter-spacing:.02em;white-space:nowrap}
-header h1 small{display:block;font-weight:500;font-size:11px;letter-spacing:.28em;color:var(--muted);margin-top:1px}
-.hbtns{display:flex;gap:7px;flex-shrink:0}
+header h1{font-size:18px;font-weight:800;letter-spacing:.03em;white-space:nowrap}
+header h1 small{display:block;font-weight:500;font-size:9.5px;letter-spacing:.24em;color:var(--muted);margin-top:2px}
+.hbtns{display:flex;gap:10px;flex-shrink:0}
 .iconbtn{
-  width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;
+  width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;
   background:rgba(255,255,255,.08);border:1px solid var(--line);color:var(--text);
 }
 .iconbtn svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
@@ -57,10 +57,10 @@ header h1 small{display:block;font-weight:500;font-size:11px;letter-spacing:.28e
 #segWrap{
   position:fixed;left:50%;transform:translateX(-50%);z-index:19;
   top:calc(env(safe-area-inset-top) + 68px);
-  display:grid;grid-template-columns:1fr 1fr;
-  background:var(--surface2);border:1px solid var(--line);border-radius:999px;padding:3px;
+  display:grid;grid-template-columns:1fr 1fr;gap:5px;
+  background:var(--surface2);border:1px solid var(--line);border-radius:999px;padding:4px;
 }
-.seg{min-width:112px;text-align:center;padding:9px 0;border-radius:999px;font-size:16px;font-weight:600;letter-spacing:.06em;color:var(--muted)}
+.seg{min-width:100px;text-align:center;padding:8px 0;border-radius:999px;font-size:14px;font-weight:600;letter-spacing:.08em;color:var(--muted)}
 .seg.active[data-st="owned"]{background:var(--btn);color:#fff}
 .seg.active[data-st="want"]{background:var(--want);color:#0c2430}
 
@@ -104,10 +104,22 @@ header h1 small{display:block;font-weight:500;font-size:11px;letter-spacing:.28e
 #caption .meta{margin-top:6px;font-size:15px;letter-spacing:.08em;color:var(--muted)}
 #counter{
   position:fixed;z-index:19;top:calc(env(safe-area-inset-top) + 68px);
-  left:50%;transform:translateX(126px);
-  height:42px;display:flex;align-items:center;
-  font-size:14px;letter-spacing:.12em;color:var(--muted);white-space:nowrap;
+  left:50%;transform:translateX(120px);
+  height:40px;margin-top:1px;display:none;align-items:center;gap:7px;
+  padding:0 15px;border-radius:999px;white-space:nowrap;
+  background:linear-gradient(160deg,rgba(20,36,70,.85),rgba(30,53,96,.65));
+  border:1px solid rgba(255,255,255,.22);
+  box-shadow:0 4px 14px rgba(10,20,45,.35),inset 0 1px 0 rgba(255,255,255,.12);
+  font-size:13px;color:var(--muted);
 }
+#counter.show{display:flex}
+#counter .cd{
+  width:13px;height:13px;border-radius:50%;flex-shrink:0;
+  background:radial-gradient(circle,#0d1626 0 22%,var(--accent) 22% 42%,#0d1626 42% 100%);
+  box-shadow:0 0 5px rgba(188,216,255,.4);
+}
+#counter b{font-size:16px;font-weight:800;color:#fff;letter-spacing:.02em}
+#counter .sep{opacity:.55;margin:0 1px}
 
 /* ===== grid ===== */
 #gridView{
@@ -674,7 +686,9 @@ function updateCaption(){
     favOnly?'お気に入りのレコードがありません。<br>詳細画面のハートで登録できます。'
     :curStatus==='want'?'購入予定のレコードがありません。<br>＋から「購入予定」で登録できます。'
     :'まだレコードがありません。<br>右下の＋からジャケットを登録しましょう。';
-  $('counter').textContent=has?`${cur+1} / ${flowList.length}`:'';
+  const cnt=$('counter');
+  cnt.classList.toggle('show',has);
+  if(has)cnt.innerHTML=`<span class="cd"></span><b>${cur+1}</b><span class="sep">/</span>${flowList.length}`;
   const rec=flowList[cur];
   $('cTitle').innerHTML=rec?esc(rec.title)+(rec.fav?'<span class="hh">♥</span>':''):'';
   $('cArtist').textContent=rec?rec.artist:'';

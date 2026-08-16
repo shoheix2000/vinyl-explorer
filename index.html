@@ -416,7 +416,7 @@ header h1 small{display:block;font-weight:500;font-size:9.5px;letter-spacing:.24
         <input id="fTitle" placeholder="Machine Head" style="flex:1">
         <button id="discBtn" style="flex-shrink:0;height:48px;padding:0 13px;border-radius:10px;background:var(--surface2);border:1px solid var(--line);font-size:13px;color:var(--muted);white-space:nowrap" title="Apple Musicでジャケットを検索">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" style="vertical-align:middle"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></svg>
-          Discogs
+          🎵 画像検索
         </button>
       </div>
     </div>
@@ -640,7 +640,7 @@ const dbDel=(id)=>new Promise((res,rej)=>{const r=tx('readwrite').delete(id);r.o
 let records=[];
 let urls=new Map();
 let cur=0;
-let editingId=null, pendingBlob=null, detailId=null;
+let editingId=null, pendingBlob=null, pendingUrl=null, detailId=null;
 let favOnly=false;
 let curStatus='owned';
 let formStatus='owned';
@@ -954,6 +954,7 @@ document.querySelectorAll('.statusrow .stbtn:not(.bst)').forEach(b=>{
 function openForm(rec){
   editingId=rec?rec.id:null;
   pendingBlob=rec&&hasImage(rec)?rec.image:null;
+  pendingUrl=null;
   $('formTitle').textContent=rec?'レコードを編集':'レコードを登録';
   $('btnSave').textContent=rec?'保存する':'登録する';
   $('fTitle').value=rec?.title||'';
@@ -967,6 +968,7 @@ function openForm(rec){
   setFormStatus(rec?rec.status:curStatus);
   const p=$('preview');
   if(pendingBlob){p.src=URL.createObjectURL(pendingBlob);p.style.display='block';}
+  else if(pendingUrl){p.src=pendingUrl;p.style.display='block';}
   else{p.style.display='none';p.removeAttribute('src');}
   validate();
   $('addSheet').classList.add('open');
@@ -996,6 +998,25 @@ $('fileCamera').addEventListener('change',onFile);
 $('fileRoll').addEventListener('change',onFile);
 
 $('btnSave').addEventListener('click',async()=>{
+  if(!pendingBlob&&pendingUrl){
+    try{
+      await new Promise((res,rej)=>{
+        const img=new Image();
+        img.onload=()=>{
+          try{
+            const side=Math.min(img.naturalWidth,img.naturalHeight)||300;
+            const out=Math.min(side,800);
+            const cv=document.createElement('canvas');cv.width=out;cv.height=out;
+            const sx=(img.naturalWidth-side)/2,sy=(img.naturalHeight-side)/2;
+            cv.getContext('2d').drawImage(img,sx,sy,side,side,0,0,out,out);
+            cv.toBlob(b=>{if(b){pendingBlob=b;res();}else rej(new Error('blob'));},'image/jpeg',0.88);
+          }catch(e){rej(e);}
+        };
+        img.onerror=()=>rej(new Error('load'));
+        img.src=pendingUrl;
+      });
+    }catch(e){/* Blob化失敗でも登録続行 */}
+  }
   let url=$('fUrl').value.trim();
   if(url&&!/^https?:\/\//i.test(url))url='https://'+url;
   const rec={
@@ -1408,51 +1429,18 @@ async function applyDgsItem(it,thumbUrl){
   }
   validate();
   if(!thumbUrl)return;
-  toast('ジャケットを取得中...');
-  /* Imageタグ+Canvas経由でCORSを回避して画像を取得 */
   const hiRes=thumbUrl.replace('300x300','600x600');
-  await new Promise(resolve=>{
-    const img=new Image();
-    img.crossOrigin='anonymous';
-    img.onload=async()=>{
-      try{
-        const side=Math.min(img.naturalWidth,img.naturalHeight);
-        const out=Math.min(side,800);
-        const cv=document.createElement('canvas');cv.width=out;cv.height=out;
-        const sx=(img.naturalWidth-side)/2,sy=(img.naturalHeight-side)/2;
-        cv.getContext('2d').drawImage(img,sx,sy,side,side,0,0,out,out);
-        cv.toBlob(b=>{
-          if(!b){toast('画像変換に失敗しました(手動で設定してください)');resolve();return;}
-          pendingBlob=b;
-          const pv=$('preview');pv.src=URL.createObjectURL(b);pv.style.display='block';
-          validate();
-          toast('ジャケットを取得しました');
-          resolve();
-        },'image/jpeg',0.88);
-      }catch(e){toast('画像の描画に失敗しました(手動で設定してください)');resolve();}
-    };
-    img.onerror=()=>{
-      /* crossOriginなしで再試行(サムネイルサイズにフォールバック) */
-      const img2=new Image();
-      img2.onload=async()=>{
-        try{
-          const cv=document.createElement('canvas');cv.width=img2.naturalWidth;cv.height=img2.naturalHeight;
-          cv.getContext('2d').drawImage(img2,0,0);
-          cv.toBlob(b=>{
-            if(!b){toast('画像の取得に失敗しました(手動で設定してください)');resolve();return;}
-            pendingBlob=b;
-            const pv=$('preview');pv.src=URL.createObjectURL(b);pv.style.display='block';
-            validate();
-            toast('ジャケットを取得しました');
-            resolve();
-          },'image/jpeg',0.88);
-        }catch(e){toast('画像の取得に失敗しました(手動で設定してください)');resolve();}
-      };
-      img2.onerror=()=>{toast('画像の取得に失敗しました(手動で設定してください)');resolve();};
-      img2.src=thumbUrl+'?'+Date.now();
-    };
-    img.src=hiRes+'?'+Date.now();
-  });
+  pendingUrl=hiRes; pendingBlob=null;
+  const pv=$('preview');
+  pv.removeAttribute('crossOrigin');
+  pv.onload=()=>{validate();toast('ジャケットを取得しました');}
+  pv.onerror=()=>{
+    if(pv.src.indexOf(hiRes)>=0&&thumbUrl!==hiRes){pv.src=thumbUrl;pendingUrl=thumbUrl;}
+    else toast('画像の読み込みに失敗しました(手動で設定してください)');
+  };
+  pv.src=hiRes;
+  pv.style.display='block';
+  validate();
 }
 
 /* ================= 詳細 ================= */

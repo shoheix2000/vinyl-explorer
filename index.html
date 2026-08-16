@@ -651,7 +651,7 @@ let viewMode='flow';
 const $=id=>document.getElementById(id);
 const stage=$('stage');
 const norm=r=>{if(!r.status)r.status='owned';return r};
-const hasImage=r=>r.image instanceof Blob;
+const hasImage=r=>r.image instanceof Blob||!!r.image_url;
 
 function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
 function toast(msg){
@@ -675,13 +675,16 @@ function placeholderURI(rec){
 }
 function urlOf(rec){
   if(!urls.has(rec.id)){
-    urls.set(rec.id, hasImage(rec)?URL.createObjectURL(rec.image):placeholderURI(rec));
+    if(rec.image instanceof Blob) urls.set(rec.id,URL.createObjectURL(rec.image));
+    else if(rec.image_url)        urls.set(rec.id,rec.image_url);
+    else                          urls.set(rec.id,placeholderURI(rec));
   }
   return urls.get(rec.id);
 }
 function dropUrl(id){
   const u=urls.get(id);
-  if(u&&u.startsWith('blob:'))URL.revokeObjectURL(u);
+  if(u&&u.startsWith('blob:')&&!records.find(r=>r.id===id)?.image_url)
+    URL.revokeObjectURL(u);
   urls.delete(id);
 }
 
@@ -968,7 +971,10 @@ function openForm(rec){
   setFormStatus(rec?rec.status:curStatus);
   const p=$('preview');
   if(pendingBlob){p.src=URL.createObjectURL(pendingBlob);p.style.display='block';}
-  else if(pendingUrl){p.src=pendingUrl;p.style.display='block';}
+  else if(pendingUrl||rec?.image_url){
+    const pu=pendingUrl||rec?.image_url;
+    p.src=pu;p.style.display='block';if(!pendingUrl)pendingUrl=pu;
+  }
   else{p.style.display='none';p.removeAttribute('src');}
   validate();
   $('addSheet').classList.add('open');
@@ -998,25 +1004,6 @@ $('fileCamera').addEventListener('change',onFile);
 $('fileRoll').addEventListener('change',onFile);
 
 $('btnSave').addEventListener('click',async()=>{
-  if(!pendingBlob&&pendingUrl){
-    try{
-      await new Promise((res,rej)=>{
-        const img=new Image();
-        img.onload=()=>{
-          try{
-            const side=Math.min(img.naturalWidth,img.naturalHeight)||300;
-            const out=Math.min(side,800);
-            const cv=document.createElement('canvas');cv.width=out;cv.height=out;
-            const sx=(img.naturalWidth-side)/2,sy=(img.naturalHeight-side)/2;
-            cv.getContext('2d').drawImage(img,sx,sy,side,side,0,0,out,out);
-            cv.toBlob(b=>{if(b){pendingBlob=b;res();}else rej(new Error('blob'));},'image/jpeg',0.88);
-          }catch(e){rej(e);}
-        };
-        img.onerror=()=>rej(new Error('load'));
-        img.src=pendingUrl;
-      });
-    }catch(e){/* Blob化失敗でも登録続行 */}
-  }
   let url=$('fUrl').value.trim();
   if(url&&!/^https?:\/\//i.test(url))url='https://'+url;
   const rec={
@@ -1027,7 +1014,8 @@ $('btnSave').addEventListener('click',async()=>{
     url,
     memo:$('fMemo').value.trim(),
     status:formStatus,
-    image:pendingBlob,
+    image:pendingBlob||null,
+    image_url:(!pendingBlob&&pendingUrl)?pendingUrl:null,
   };
   try{
     let newId=null;
@@ -1036,6 +1024,7 @@ $('btnSave').addEventListener('click',async()=>{
       rec.id=editingId;
       rec.createdAt=old?.createdAt||Date.now();
       rec.fav=old?.fav||false;
+      if(!rec.image&&!rec.image_url&&old?.image_url)rec.image_url=old.image_url;
       await dbPut(rec);
       dropUrl(editingId);
       toast('保存しました');
@@ -1295,7 +1284,8 @@ $('expBtn').addEventListener('click',async()=>{
         title:r.title,artist:r.artist,year:r.year||'',genre:r.genre||'',
         memo:r.memo||'',url:r.url||'',status:r.status,fav:!!r.fav,
         createdAt:r.createdAt,
-        image:hasImage(r)?await blobToDataURL(r.image):null,
+        image:r.image instanceof Blob?await blobToDataURL(r.image):null,
+        image_url:r.image_url||null,
       });
     }
     const blob=new Blob([JSON.stringify({app:'vinyl-explorer',ver:1,records:out})],{type:'application/json'});
@@ -1335,6 +1325,7 @@ $('fileImp').addEventListener('change',async e=>{
         status:r.status==='want'?'want':'owned',fav:!!r.fav,
         createdAt:r.createdAt||base+i,
         image:r.image?dataURLtoBlob(r.image):null,
+        image_url:r.image_url||null,
       };
       rec.id=await dbPut(rec);
       records.push(rec);

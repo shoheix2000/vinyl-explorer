@@ -9,11 +9,11 @@
 <title>Vinyl Explorer</title>
 <style>
 :root{
-  --bg:#3e5588;
-  --bgHi:#4d67a3;
-  --surface:#46608f;
-  --surface2:#516b9e;
-  --line:#6a83b8;
+  --bg:#17253d;
+  --bgHi:#1f3050;
+  --surface:#1e3052;
+  --surface2:#263d63;
+  --line:#3d567d;
   --text:#ffffff;
   --muted:#dde5f6;
   --accent:#bcd8ff;
@@ -39,7 +39,7 @@ header{
   position:fixed;top:0;left:0;right:0;z-index:20;
   padding:calc(env(safe-area-inset-top) + 14px) 20px 8px;
   display:flex;align-items:center;justify-content:space-between;gap:8px;
-  background:linear-gradient(to bottom,rgba(62,85,136,.95),rgba(62,85,136,.6) 70%,rgba(62,85,136,0));
+  background:linear-gradient(to bottom,rgba(23,37,61,.97),rgba(23,37,61,.65) 70%,rgba(23,37,61,0));
 }
 header h1{font-size:18px;font-weight:800;letter-spacing:.03em;white-space:nowrap}
 header h1 small{display:block;font-weight:500;font-size:9.5px;letter-spacing:.24em;color:var(--muted);margin-top:2px}
@@ -106,7 +106,7 @@ header h1 small{display:block;font-weight:500;font-size:9.5px;letter-spacing:.24
   width:fit-content;margin:0 auto 10px;
   height:36px;display:none;align-items:center;gap:7px;
   padding:0 15px;border-radius:999px;white-space:nowrap;
-  background:linear-gradient(160deg,rgba(20,36,70,.85),rgba(30,53,96,.65));
+  background:linear-gradient(160deg,rgba(10,18,36,.9),rgba(18,34,62,.75));
   border:1px solid rgba(255,255,255,.22);
   box-shadow:0 4px 14px rgba(10,20,45,.35),inset 0 1px 0 rgba(255,255,255,.12);
   font-size:13px;color:var(--muted);
@@ -114,7 +114,7 @@ header h1 small{display:block;font-weight:500;font-size:9.5px;letter-spacing:.24
 #counter.show{display:flex}
 #counter .cd{
   width:13px;height:13px;border-radius:50%;flex-shrink:0;
-  background:radial-gradient(circle,#0d1626 0 22%,var(--accent) 22% 42%,#0d1626 42% 100%);
+  background:radial-gradient(circle,#060c18 0 22%,var(--accent) 22% 42%,#0d1626 42% 100%);
   box-shadow:0 0 5px rgba(188,216,255,.4);
 }
 #counter b{font-size:16px;font-weight:800;color:#fff;letter-spacing:.02em}
@@ -140,8 +140,8 @@ header h1 small{display:block;font-weight:500;font-size:9.5px;letter-spacing:.24
 }
 #empty .ering{
   width:110px;height:110px;border-radius:50%;
-  background:radial-gradient(circle,#2b3d66 0 24%,transparent 24% 26%,#3d5486 26% 100%),
-    repeating-radial-gradient(circle,#31456f 0 3px,#3d5486 3px 6px);
+  background:radial-gradient(circle,#131e30 0 24%,transparent 24% 26%,#1e3050 26% 100%),
+    repeating-radial-gradient(circle,#182540 0 3px,#1e3050 3px 6px);
   border:1px solid var(--line);
 }
 #empty p{font-size:16px;line-height:1.9;letter-spacing:.04em}
@@ -158,7 +158,7 @@ header h1 small{display:block;font-weight:500;font-size:9.5px;letter-spacing:.24
 /* ===== sheets ===== */
 .sheet{
   position:fixed;inset:0;z-index:40;display:none;flex-direction:column;justify-content:flex-end;
-  background:rgba(18,28,52,.62);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+  background:rgba(8,14,26,.72);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
 }
 .sheet.open{display:flex}
 .panel{
@@ -194,6 +194,7 @@ header h1 small{display:block;font-weight:500;font-size:9.5px;letter-spacing:.24
 .batchopt svg{width:26px;height:26px;flex-shrink:0;stroke:var(--accent);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .batchopt .bt{font-size:17px;font-weight:600}
 .batchopt .bd{font-size:13.5px;color:var(--muted);margin-top:3px;line-height:1.6}
+.batchopt.tmpl{border-style:solid;border-color:var(--line);opacity:.85}
 .orline2{display:flex;align-items:center;gap:12px;color:var(--muted);font-size:13px;letter-spacing:.1em;margin:6px 0 12px}
 .orline2::before,.orline2::after{content:'';flex:1;height:1px;background:var(--line)}
 .pickbtn svg{width:24px;height:24px;stroke:var(--accent);fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
@@ -410,7 +411,15 @@ header h1 small{display:block;font-weight:500;font-size:9.5px;letter-spacing:.24
       <button class="stbtn" data-st="want">購入予定</button>
     </div>
 
-    <div class="field"><label>タイトル *</label><input id="fTitle" placeholder="Machine Head"></div>
+    <div class="field"><label>タイトル *</label>
+      <div style="display:flex;gap:8px;align-items:flex-end">
+        <input id="fTitle" placeholder="Machine Head" style="flex:1">
+        <button id="discBtn" style="flex-shrink:0;height:48px;padding:0 13px;border-radius:10px;background:var(--surface2);border:1px solid var(--line);font-size:13px;color:var(--muted);white-space:nowrap" title="Apple Musicでジャケットを検索">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" style="vertical-align:middle"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></svg>
+          Discogs
+        </button>
+      </div>
+    </div>
     <div class="field"><label>アーティスト *</label><input id="fArtist" placeholder="Deep Purple"></div>
     <div class="frow">
       <div class="field"><label>年</label><select id="fYear"></select></div>
@@ -432,6 +441,11 @@ header h1 small{display:block;font-weight:500;font-size:9.5px;letter-spacing:.24
       <svg viewBox="0 0 24 24"><path d="M12 3v12M12 15l-4-4M12 15l4-4"/><path d="M4 17v3h16v-3"/></svg>
       <div><div class="bt">CSVから一括登録</div>
       <div class="bd">列: タイトル, アーティスト, 年, ジャンル, メモ, URL, 区分(所有/購入予定), お気に入り(1)。UTF-8 / Shift_JIS 対応</div></div>
+    </button>
+    <button class="batchopt tmpl" id="tplBtn">
+      <svg viewBox="0 0 24 24"><path d="M14 3H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V9z"/><path d="M14 3v6h6"/><path d="M8 13h8M8 17h5"/></svg>
+      <div><div class="bt">CSVテンプレートをダウンロード</div>
+      <div class="bd">BOM付きUTF-8で保存するのでExcelで文字化けしません。ダウンロード後そのまま開いて入力できます</div></div>
     </button>
     <button class="batchopt" id="bulkPhotoBtn">
       <svg viewBox="0 0 24 24"><rect x="7" y="7" width="13" height="13" rx="2"/><path d="M4 16V5a1 1 0 011-1h11"/><circle cx="11.5" cy="11.5" r="1.5"/><path d="M7 17l4-4 3 3 2.5-2.5 3.5 3.5"/></svg>
@@ -524,11 +538,35 @@ header h1 small{display:block;font-weight:500;font-size:9.5px;letter-spacing:.24
   </div>
 </div>
 
+<!-- discogs search sheet -->
+<div class="sheet" id="discogsSheet">
+  <div class="panel" style="min-height:55dvh">
+    <div class="grip"></div>
+    <div class="panelhead">
+      <h2>Apple Musicで検索</h2>
+      <button class="xbtn" id="btnCloseDiscogs">
+        <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <div id="dgsBox" style="position:relative;margin-bottom:14px">
+      <svg style="position:absolute;left:13px;top:50%;transform:translateY(-50%);width:19px;height:19px;stroke:var(--muted);fill:none;stroke-width:2;stroke-linecap:round" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></svg>
+      <input id="dgsInput" type="search" placeholder="アーティスト名、アルバム名で検索" autocomplete="off"
+        style="width:100%;background:var(--surface2);border:1px solid var(--line);border-radius:12px;padding:13px 13px 13px 44px;font-size:17px;color:var(--text);outline:none">
+    </div>
+    <div id="dgsResults" style="min-height:120px"></div>
+  </div>
+</div>
+
 <!-- search sheet -->
 <div class="sheet" id="searchSheet">
   <div class="panel" style="min-height:70dvh">
     <div class="grip"></div>
-    <h2>検索</h2>
+    <div class="panelhead">
+      <h2>検索</h2>
+      <button class="xbtn" id="btnCloseSearch" aria-label="閉じる">
+        <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
     <div id="searchBox">
       <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></svg>
       <input id="searchInput" type="search" placeholder="アーティスト・アルバム名" autocomplete="off">
@@ -1211,6 +1249,21 @@ function dataURLtoBlob(d){
   for(let j=0;j<bin.length;j++)u[j]=bin.charCodeAt(j);
   return new Blob([u],{type:mime});
 }
+$('tplBtn').addEventListener('click',()=>{
+  const BOM='\uFEFF';
+  const header='タイトル,アーティスト,年,ジャンル,メモ,URL,区分,お気に入り';
+  const row1='Machine Head,Deep Purple,1972,ハードロック,UK盤,https://www.discogs.com/,所有,1';
+  const row2='Close to the Edge,Yes,1972,プログレッシブ・ロック,,,購入予定,';
+  const csv=BOM+[header,row1,row2].join('\r\n')+'\r\n';
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');
+  const d=new Date(),z=n=>String(n).padStart(2,'0');
+  a.href=URL.createObjectURL(blob);
+  a.download=`vinyl-template-${d.getFullYear()}${z(d.getMonth()+1)}${z(d.getDate())}.csv`;
+  document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href),5000);
+  toast('テンプレートをダウンロードしました');
+});
 $('expBtn').addEventListener('click',async()=>{
   if(!records.length){toast('レコードがありません');return;}
   toast('書き出し中...');
@@ -1273,6 +1326,105 @@ $('fileImp').addEventListener('change',async e=>{
   }catch(err){toast('読み込みに失敗しました');}
 });
 
+
+/* ================= Discogs ================= */
+const DTOKEN='XCZLqdmnzPjUNpkHoeGKUgJLbFvLyXfYonnPfgTX';
+let dgsTimer=null;
+
+$('discBtn').addEventListener('click',()=>{
+  const q=[$('fArtist').value.trim(),$('fTitle').value.trim()].filter(Boolean).join(' ');
+  $('dgsInput').value=q;
+  $('discogsSheet').classList.add('open');
+  if($('dgsInput').value.trim()) dgsSearch($('dgsInput').value.trim());
+  else $('dgsResults').innerHTML='';
+  setTimeout(()=>$('dgsInput').focus(),120);
+});
+$('btnCloseDiscogs').addEventListener('click',()=>$('discogsSheet').classList.remove('open'));
+$('dgsInput').addEventListener('input',e=>{
+  clearTimeout(dgsTimer);
+  dgsTimer=setTimeout(()=>dgsSearch(e.target.value.trim()),500);
+});
+$('dgsInput').addEventListener('keydown',e=>{if(e.key==='Enter')dgsSearch($('dgsInput').value.trim())});
+
+function dgsSearch(q){
+  if(!q)return;
+  const box=$('dgsResults');
+  box.innerHTML='<div style="text-align:center;padding:24px;color:var(--muted);font-size:15px">検索中...</div>';
+  /* iTunes Search APIはJSONPに対応 — scriptタグ経由でCORSを回避 */
+  const cbName='_itunesCb_'+Date.now();
+  const old=document.getElementById('_itunesScript');
+  if(old)old.remove();
+  const timer=setTimeout(()=>{
+    window[cbName]=null;
+    box.innerHTML='<div style="text-align:center;padding:24px;color:var(--muted);font-size:15px">タイムアウトしました。再度お試しください。</div>';
+  },10000);
+  window[cbName]=function(data){
+    clearTimeout(timer);
+    window[cbName]=null;
+    renderDgsResults(data.results||[]);
+  };
+  const sc=document.createElement('script');
+  sc.id='_itunesScript';
+  sc.src=`https://itunes.apple.com/search?term=${encodeURIComponent(q)}&media=music&entity=album&limit=10&country=JP&callback=${cbName}`;
+  sc.onerror=()=>{
+    clearTimeout(timer);
+    box.innerHTML='<div style="text-align:center;padding:24px;color:var(--muted);font-size:15px">検索に失敗しました。ネットワーク接続を確認してください。</div>';
+  };
+  document.head.appendChild(sc);
+}
+function renderDgsResults(items){
+  const box=$('dgsResults');
+  if(!items.length){box.innerHTML='<div style="text-align:center;padding:24px;color:var(--muted);font-size:15px">見つかりませんでした</div>';return;}
+  box.innerHTML='';
+  items.forEach(it=>{
+    /* iTunes APIのレスポンス形式に対応 */
+    const thumb=(it.artworkUrl100||'').replace('100x100','300x300');
+    const title=it.collectionName||it.trackName||'';
+    const artist=it.artistName||'';
+    const year=(it.releaseDate||'').slice(0,4);
+    const genre=it.primaryGenreName||'';
+    const row=document.createElement('button');
+    row.style.cssText='display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:10px 4px;border-bottom:1px solid var(--line)';
+    row.innerHTML=`<img src="${thumb}" alt="" style="width:60px;height:60px;border-radius:5px;object-fit:cover;flex-shrink:0;background:var(--surface2)">
+      <div style="min-width:0;flex:1">
+        <div style="font-size:16px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(title)}</div>
+        <div style="font-size:13px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(artist)}${year?' · '+year:''}</div>
+      </div>
+      <svg viewBox="0 0 24 24" style="width:18px;height:18px;flex-shrink:0;stroke:var(--muted);fill:none;stroke-width:1.9;stroke-linecap:round;margin-left:auto"><path d="M5 12h14M12 5l7 7-7 7"/></svg>`;
+    row.addEventListener('click',()=>applyDgsItem({title,artist,year,genre},thumb));
+    box.appendChild(row);
+  });
+}
+async function applyDgsItem(it,thumbUrl){
+  $('discogsSheet').classList.remove('open');
+  /* フォームにメタデータを反映(空の場合のみ上書き) */
+  if(it.artist)$('fArtist').value=$('fArtist').value||it.artist;
+  if(it.title) $('fTitle').value =$('fTitle').value ||it.title;
+  if(it.year)  $('fYear').value=String(it.year);
+  if(it.genre){
+    const sel=$('fGenre');
+    const match=[...sel.options].find(o=>o.value.toLowerCase().includes(it.genre.toLowerCase().split(' ')[0]));
+    if(match)sel.value=match.value;
+  }
+  validate();
+  if(!thumbUrl)return;
+  toast('ジャケットを取得中...');
+  try{
+    /* iTunes画像はCORSを許可しているため直接fetch可能 */
+    const hiRes=thumbUrl.replace('300x300','600x600');
+    const res=await fetch(hiRes);
+    if(!res.ok)throw new Error(res.status);
+    const ab=await res.arrayBuffer();
+    const blob=new Blob([ab],{type:'image/jpeg'});
+    pendingBlob=await processImage(new File([blob],'cover.jpg',{type:'image/jpeg'}));
+    const p=$('preview');p.src=URL.createObjectURL(pendingBlob);p.style.display='block';
+    validate();
+    toast('ジャケットを取得しました');
+  }catch(err){
+    toast('画像の取得に失敗しました(手動で設定してください)');
+  }
+}
+
 /* ================= 詳細 ================= */
 function openDetail(id){
   const rec=records.find(r=>r.id===id);
@@ -1324,6 +1476,7 @@ $('btnDelete').addEventListener('click',async()=>{
 });
 
 /* ================= 検索 ================= */
+$('btnCloseSearch').addEventListener('click',()=>$('searchSheet').classList.remove('open'));
 $('btnSearch').addEventListener('click',()=>{
   $('searchSheet').classList.add('open');
   renderSearch('');

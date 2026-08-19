@@ -85,12 +85,12 @@ header h1 small{display:block;font-weight:500;font-size:9.5px;letter-spacing:.24
 }
 .card.center .disc{transform:translateX(16%)}
 .card .sleeve{
-  position:absolute;inset:0;border-radius:18px;overflow:hidden;background:var(--surface2);
+  position:absolute;inset:0;border-radius:13%;overflow:hidden;background:var(--surface2);
   box-shadow:0 18px 46px rgba(10,16,30,.6),inset 0 0 0 1px rgba(255,255,255,.09);
 }
 .card .sleeve img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
 .card .refl{
-  position:absolute;top:calc(100% + 6px);left:0;width:100%;height:55%;border-radius:18px;overflow:hidden;
+  position:absolute;top:calc(100% + 6px);left:0;width:100%;height:55%;border-radius:13%;overflow:hidden;
   transform:scaleY(-1);opacity:.2;pointer-events:none;
   -webkit-mask-image:linear-gradient(to top,rgba(0,0,0,0) 30%,rgba(0,0,0,1));
   mask-image:linear-gradient(to top,rgba(0,0,0,0) 30%,rgba(0,0,0,1));
@@ -127,7 +127,7 @@ header h1 small{display:block;font-weight:500;font-size:9.5px;letter-spacing:.24
   display:none;
 }
 #grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-.gcell{aspect-ratio:1/1;border-radius:14px;overflow:hidden;background:var(--surface2);
+.gcell{aspect-ratio:1/1;border-radius:13%;overflow:hidden;background:var(--surface2);
   box-shadow:0 4px 14px rgba(10,16,30,.4);position:relative}
 .gcell img{width:100%;height:100%;object-fit:cover;display:block}
 .gcell .gfav{position:absolute;top:5px;right:5px;width:21px;height:21px;filter:drop-shadow(0 1px 3px rgba(0,0,0,.7))}
@@ -199,7 +199,7 @@ header h1 small{display:block;font-weight:500;font-size:9.5px;letter-spacing:.24
 .orline2::before,.orline2::after{content:'';flex:1;height:1px;background:var(--line)}
 .pickbtn svg{width:24px;height:24px;stroke:var(--accent);fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 #preview{
-  width:150px;height:150px;border-radius:16px;margin:0 auto 14px;display:none;
+  width:150px;height:150px;border-radius:13%;margin:0 auto 14px;display:none;
   object-fit:cover;box-shadow:0 8px 22px rgba(10,16,30,.5);
 }
 .field{margin-bottom:12px}
@@ -253,7 +253,7 @@ header h1 small{display:block;font-weight:500;font-size:9.5px;letter-spacing:.24
 
 /* --- bulk assign --- */
 #bProgress{text-align:center;font-size:15px;letter-spacing:.2em;color:var(--muted);margin-bottom:10px}
-#bPreview{width:140px;height:140px;border-radius:16px;object-fit:cover;display:block;margin:0 auto 14px;
+#bPreview{width:140px;height:140px;border-radius:13%;object-fit:cover;display:block;margin:0 auto 14px;
   box-shadow:0 8px 22px rgba(10,16,30,.5)}
 #bNewFields{display:block}
 .bulkactions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px}
@@ -262,7 +262,7 @@ header h1 small{display:block;font-weight:500;font-size:9.5px;letter-spacing:.24
 .bok:disabled{opacity:.4}
 
 /* --- detail --- */
-#dCover{width:min(66vw,270px);aspect-ratio:1/1;border-radius:20px;object-fit:cover;display:block;margin:4px auto 10px;
+#dCover{width:min(66vw,270px);aspect-ratio:1/1;border-radius:13%;object-fit:cover;display:block;margin:4px auto 10px;
   box-shadow:0 16px 40px rgba(10,16,30,.55)}
 #dFav{
   display:flex;align-items:center;justify-content:center;gap:7px;
@@ -301,7 +301,7 @@ header h1 small{display:block;font-weight:500;font-size:9.5px;letter-spacing:.24
 #searchInput:focus{border-color:var(--accent)}
 #searchResults{min-height:200px}
 .srow{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:10px 4px;border-bottom:1px solid var(--line)}
-.srow img{width:54px;height:54px;border-radius:11px;object-fit:cover;flex-shrink:0;background:var(--surface2)}
+.srow img{width:54px;height:54px;border-radius:13%;object-fit:cover;flex-shrink:0;background:var(--surface2)}
 .srow .sc{min-width:0}
 .srow .st{font-size:18px;font-weight:600;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .srow .sa{font-size:15px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -1358,106 +1358,75 @@ $('dgsInput').addEventListener('input',e=>{
 });
 $('dgsInput').addEventListener('keydown',e=>{if(e.key==='Enter')dgsSearch($('dgsInput').value.trim())});
 
-async function dgsSearch(q){
+function dgsSearch(q){
   if(!q)return;
   const box=$('dgsResults');
   box.innerHTML='<div style="text-align:center;padding:24px;color:var(--muted);font-size:15px">検索中...</div>';
-  try{
-    /* MusicBrainz API: CORS完全許可・登録不要 */
-    const url=`https://musicbrainz.org/ws/2/release/?query=${encodeURIComponent(q)}&limit=10&fmt=json&inc=release-groups`;
-    const res=await fetch(url,{headers:{'User-Agent':'VinylExplorer/1.0 (https://github.com/shoheix2000/vinyl-explorer)'}});
-    if(!res.ok)throw new Error(res.status);
-    const data=await res.json();
-    renderDgsResults(data.releases||[]);
-  }catch(err){
+  /* iTunes Search API: JSONP(scriptタグ)経由で呼び出しCORSを回避。Mac/デスクトップで安定動作 */
+  const cbName='_itunesCb_'+Date.now();
+  const oldSc=document.getElementById('_itunesScript');
+  if(oldSc)oldSc.remove();
+  const timer=setTimeout(()=>{
+    window[cbName]=null;
+    box.innerHTML='<div style="text-align:center;padding:24px;color:var(--muted);font-size:15px">タイムアウトしました。再度お試しください。</div>';
+  },10000);
+  window[cbName]=function(data){
+    clearTimeout(timer);
+    window[cbName]=null;
+    renderDgsResults(data.results||[]);
+  };
+  const sc=document.createElement('script');
+  sc.id='_itunesScript';
+  sc.src=`https://itunes.apple.com/search?term=${encodeURIComponent(q)}&media=music&entity=album&limit=10&country=JP&callback=${cbName}`;
+  sc.onerror=()=>{
+    clearTimeout(timer);
     box.innerHTML='<div style="text-align:center;padding:24px;color:var(--muted);font-size:15px">検索に失敗しました。ネットワーク接続を確認してください。</div>';
-    console.error(err);
-  }
+  };
+  document.head.appendChild(sc);
 }
 function renderDgsResults(items){
   const box=$('dgsResults');
   if(!items.length){box.innerHTML='<div style="text-align:center;padding:24px;color:var(--muted);font-size:15px">見つかりませんでした</div>';return;}
   box.innerHTML='';
   items.forEach(it=>{
-    /* MusicBrainz release形式 */
-    const mbid=it.id||'';
-    const title=it.title||'';
-    const artist=(it['artist-credit']||[]).map(a=>typeof a==='string'?a:(a.artist?.name||'')).join('');
-    const year=(it.date||'').slice(0,4);
-    const label=(it['label-info']||[]).map(l=>l.label?.name||'').filter(Boolean).join(', ');
-    /* カバーはボタン押下後に取得するため、ここではプレースホルダー */
+    /* iTunes Search APIのレスポンス形式 */
+    const thumb=(it.artworkUrl100||'').replace('100x100','600x600');
+    const title=it.collectionName||it.trackName||'';
+    const artist=it.artistName||'';
+    const year=(it.releaseDate||'').slice(0,4);
     const row=document.createElement('button');
-    row.style.cssText='display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:12px 4px;border-bottom:1px solid var(--line)';
-    row.innerHTML=`<div style="width:60px;height:60px;border-radius:5px;flex-shrink:0;background:var(--surface2);display:flex;align-items:center;justify-content:center">
-        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="var(--muted)" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/></svg>
-      </div>
+    row.style.cssText='display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:10px 4px;border-bottom:1px solid var(--line)';
+    row.innerHTML=`<img src="${thumb}" alt="" style="width:60px;height:60px;border-radius:13%;object-fit:cover;flex-shrink:0;background:var(--surface2)">
       <div style="min-width:0;flex:1">
         <div style="font-size:16px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(title)}</div>
         <div style="font-size:13px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(artist)}${year?' · '+year:''}</div>
-        ${label?`<div style="font-size:11px;color:var(--muted);margin-top:2px;opacity:.7">${esc(label)}</div>`:''}
       </div>
       <svg viewBox="0 0 24 24" style="width:18px;height:18px;flex-shrink:0;stroke:var(--muted);fill:none;stroke-width:1.9;stroke-linecap:round;margin-left:auto"><path d="M5 12h14M12 5l7 7-7 7"/></svg>`;
-    const rgid=it['release-group']?.id||null;
-    row.addEventListener('click',()=>applyDgsItem({title,artist,year},mbid,rgid));
+    row.addEventListener('click',()=>applyDgsItem({title,artist,year},thumb));
     box.appendChild(row);
   });
 }
-function fetchWithTimeout(url,ms,opts){
-  const ctrl=new AbortController();
-  const t=setTimeout(()=>ctrl.abort(),ms);
-  return fetch(url,{...opts,signal:ctrl.signal}).finally(()=>clearTimeout(t));
-}
-async function tryFetchBlob(url){
-  /* まず直接fetchを試み、CORSで失敗した場合はプロキシ(images.weserv.nl)経由で再試行 */
-  try{
-    const res=await fetchWithTimeout(url,8000);
-    if(res.ok){
-      const blob=await res.blob();
-      if(blob.size>300)return blob;
-    }
-  }catch(err){/* fall through to proxy */}
-  const proxied=`https://images.weserv.nl/?url=${encodeURIComponent(url.replace(/^https?:\/\//,''))}&w=600&h=600&fit=cover&output=jpg`;
-  const res2=await fetchWithTimeout(proxied,8000);
-  if(!res2.ok)throw new Error('proxy fetch failed: '+res2.status);
-  const blob2=await res2.blob();
-  if(blob2.size<300)throw new Error('empty image');
-  return blob2;
-}
-async function findCoverUrl(entityType,id){
-  /* Cover Art ArchiveのJSONマニフェストからfront画像のURLを取得 */
-  try{
-    const res=await fetchWithTimeout(`https://coverartarchive.org/${entityType}/${id}`,8000);
-    if(!res.ok)return null;
-    const data=await res.json();
-    const front=(data.images||[]).find(im=>im.front)||(data.images||[])[0];
-    if(!front)return null;
-    return front.thumbnails?.large||front.thumbnails?.['500']||front.image;
-  }catch(err){return null;}
-}
-async function applyDgsItem(it,mbid,rgid){
+async function applyDgsItem(it,thumbUrl){
   $('discogsSheet').classList.remove('open');
   if(it.artist)$('fArtist').value=$('fArtist').value||it.artist;
   if(it.title) $('fTitle').value =$('fTitle').value ||it.title;
   if(it.year)  $('fYear').value=String(it.year);
   validate();
-  if(!mbid&&!rgid)return;
-  toast('ジャケットを取得中...');
-  try{
-    /* releaseにカバーがなければrelease-group(アルバム全体)側を試す */
-    let coverUrl=mbid?await findCoverUrl('release',mbid):null;
-    if(!coverUrl&&rgid)coverUrl=await findCoverUrl('release-group',rgid);
-    if(!coverUrl)throw new Error('no cover found');
-    const blob=await tryFetchBlob(coverUrl);
-    pendingBlob=await processImage(new File([blob],'cover.jpg',{type:blob.type||'image/jpeg'}));
-    pendingUrl=null;
-    const pv=$('preview');
-    pv.src=URL.createObjectURL(pendingBlob);
-    pv.style.display='block';
-    validate();
-    toast('ジャケットを取得しました ✓');
-  }catch(err){
-    toast('ジャケットが見つかりませんでした(手動で設定してください)');
-  }
+  if(!thumbUrl)return;
+  /* iTunes CDN画像はCanvas経由だとCORSでBlob化できないため、
+     URLをそのままimage_urlとしてIndexedDBに保存する(表示はimg srcで直接参照) */
+  pendingUrl=thumbUrl;
+  pendingBlob=null;
+  const pv=$('preview');
+  pv.onload=()=>{validate();toast('ジャケットを取得しました ✓');}
+  pv.onerror=()=>{
+    const fallback=thumbUrl.replace('600x600','300x300');
+    if(pv.src.indexOf('600x600')>=0&&thumbUrl!==fallback){pv.src=fallback;pendingUrl=fallback;}
+    else toast('画像の読み込みに失敗しました(手動で設定してください)');
+  };
+  pv.src=thumbUrl;
+  pv.style.display='block';
+  validate();
 }
 
 /* ================= 詳細 ================= */

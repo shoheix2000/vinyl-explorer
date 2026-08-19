@@ -1160,69 +1160,79 @@ $('apStop').addEventListener('click',()=>{autoAbort=true;});
 $('fileCSVAuto').addEventListener('change',async e=>{
   const f=e.target.files[0];e.target.value='';
   if(!f)return;
-  let rows;
+  toast('CSVを読み込んでいます...');
   try{
-    const text=await readCSVText(f);
-    rows=parseCSV(text);
-  }catch(err){toast('CSVの読み込みに失敗しました');return;}
-  if(rows.length<2){toast('データ行がありません');return;}
-  const map=mapHeader(rows[0]);
-  if(map.title==null||map.artist==null){
-    toast('ヘッダーに「タイトル」「アーティスト」が必要です');return;
-  }
-
-  /* 1. まずメタデータを全件登録(画像なし) */
-  const entries=[];
-  const base=Date.now();
-  for(let i=1;i<rows.length;i++){
-    const r=rows[i];
-    const get=k=>map[k]!=null?String(r[map[k]]??'').trim():'';
-    const title=get('title'),artist=get('artist');
-    if(!title||!artist)continue;
-    let url=get('url');
-    if(url&&!/^https?:\/\//i.test(url))url='https://'+url;
-    const status=/購入|欲|want|wish/i.test(get('status'))?'want':'owned';
-    const fav=/^(1|true|yes|y|○|〇|◯)$/i.test(get('fav'));
-    const rec={title,artist,year:get('year'),genre:get('genre'),memo:get('memo'),url,status,fav,image:null,image_url:null,createdAt:base+i};
-    rec.id=await dbPut(rec);
-    entries.push(rec);
-  }
-  records=(await dbAll()).map(norm);
-  $('batchSheet').classList.remove('open');
-  closeForm();
-  refreshViews();
-  if(!entries.length){toast('登録できる行がありませんでした');return;}
-
-  /* 2. 進捗シートを表示しながら1件ずつiTunes検索してジャケットを設定 */
-  autoAbort=false;
-  $('autoProgSheet').classList.add('open');
-  let found=0,notfound=0;
-  for(let i=0;i<entries.length;i++){
-    if(autoAbort)break;
-    const rec=entries[i];
-    $('apStatus').textContent=`${esc(rec.artist)} - ${esc(rec.title)}`;
-    $('apBar').style.width=`${Math.round((i/entries.length)*100)}%`;
-    $('apCounts').textContent=`${i+1} / ${entries.length} 件　(取得済み ${found} / 未取得 ${notfound})`;
+    let rows;
     try{
-      const results=await itunesSearchOnce(`${rec.artist} ${rec.title}`);
-      if(results.length){
-        const thumb=(results[0].artworkUrl100||'').replace('100x100','600x600');
-        if(thumb){
-          rec.image_url=thumb;
-          await dbPut(rec);
-          found++;
+      const text=await readCSVText(f);
+      rows=parseCSV(text);
+    }catch(err){toast('CSVの読み込みに失敗しました');return;}
+    if(rows.length<2){toast('データ行がありません');return;}
+    const map=mapHeader(rows[0]);
+    if(map.title==null||map.artist==null){
+      toast('ヘッダーに「タイトル」「アーティスト」が必要です');return;
+    }
+
+    /* 1. まずメタデータを全件登録(画像なし) */
+    const entries=[];
+    const base=Date.now();
+    for(let i=1;i<rows.length;i++){
+      const r=rows[i];
+      const get=k=>map[k]!=null?String(r[map[k]]??'').trim():'';
+      const title=get('title'),artist=get('artist');
+      if(!title||!artist)continue;
+      let url=get('url');
+      if(url&&!/^https?:\/\//i.test(url))url='https://'+url;
+      const status=/購入|欲|want|wish/i.test(get('status'))?'want':'owned';
+      const fav=/^(1|true|yes|y|○|〇|◯)$/i.test(get('fav'));
+      const rec={title,artist,year:get('year'),genre:get('genre'),memo:get('memo'),url,status,fav,image:null,image_url:null,createdAt:base+i};
+      try{
+        rec.id=await dbPut(rec);
+        entries.push(rec);
+      }catch(err){console.error('dbPut failed for row',i,err);}
+    }
+    records=(await dbAll()).map(norm);
+    $('batchSheet').classList.remove('open');
+    closeForm();
+    refreshViews();
+    if(!entries.length){toast('登録できる行がありませんでした');return;}
+    toast(`${entries.length}件登録しました。ジャケットを検索します...`);
+
+    /* 2. 進捗シートを表示しながら1件ずつiTunes検索してジャケットを設定 */
+    autoAbort=false;
+    $('autoProgSheet').classList.add('open');
+    let found=0,notfound=0;
+    for(let i=0;i<entries.length;i++){
+      if(autoAbort)break;
+      const rec=entries[i];
+      $('apStatus').textContent=`${esc(rec.artist)} - ${esc(rec.title)}`;
+      $('apBar').style.width=`${Math.round((i/entries.length)*100)}%`;
+      $('apCounts').textContent=`${i+1} / ${entries.length} 件　(取得済み ${found} / 未取得 ${notfound})`;
+      try{
+        const results=await itunesSearchOnce(`${rec.artist} ${rec.title}`);
+        if(results.length){
+          const thumb=(results[0].artworkUrl100||'').replace('100x100','600x600');
+          if(thumb){
+            rec.image_url=thumb;
+            await dbPut(rec);
+            found++;
+          }else notfound++;
         }else notfound++;
-      }else notfound++;
-    }catch(err){notfound++;}
-    await sleep(120);   /* iTunes側のレート制限を避けるための間隔 */
+      }catch(err){notfound++;}
+      await sleep(120);   /* iTunes側のレート制限を避けるための間隔 */
+    }
+    $('apBar').style.width='100%';
+    $('autoProgSheet').classList.remove('open');
+    records=(await dbAll()).map(norm);
+    refreshViews();
+    toast(autoAbort
+      ? `中止しました(ジャケット取得 ${found}件 / 未取得 ${notfound}件)`
+      : `完了: ${entries.length}件登録、ジャケット取得 ${found}件 / 未取得 ${notfound}件`);
+  }catch(err){
+    console.error('CSV auto import failed:',err);
+    $('autoProgSheet').classList.remove('open');
+    toast('処理中にエラーが発生しました('+(err&&err.message?err.message:'不明なエラー')+')');
   }
-  $('apBar').style.width='100%';
-  $('autoProgSheet').classList.remove('open');
-  records=(await dbAll()).map(norm);
-  refreshViews();
-  toast(autoAbort
-    ? `中止しました(ジャケット取得 ${found}件 / 未取得 ${notfound}件)`
-    : `完了: ${entries.length}件登録、ジャケット取得 ${found}件 / 未取得 ${notfound}件`);
 });
 
 

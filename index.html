@@ -386,6 +386,7 @@ header h1 small{display:block;font-weight:500;font-size:9.5px;letter-spacing:.24
     </div>
 
     <input type="file" id="fileCSV" accept=".csv,text/csv" hidden>
+    <input type="file" id="fileCSVAuto" accept=".csv,text/csv" hidden>
     <input type="file" id="fileBulk" accept="image/*" multiple hidden>
 
     <img id="preview" alt="ジャケットプレビュー">
@@ -442,6 +443,11 @@ header h1 small{display:block;font-weight:500;font-size:9.5px;letter-spacing:.24
       <div><div class="bt">CSVから一括登録</div>
       <div class="bd">列: タイトル, アーティスト, 年, ジャンル, メモ, URL, 区分(所有/購入予定), お気に入り(1)。UTF-8 / Shift_JIS 対応</div></div>
     </button>
+    <button class="batchopt" id="csvAutoBtn">
+      <svg viewBox="0 0 24 24"><path d="M12 3v12M12 15l-4-4M12 15l4-4"/><path d="M4 17v3h16v-3"/><circle cx="18.5" cy="5.5" r="3.2" fill="var(--surface)" stroke="var(--want)"/><path d="M17 5.5l1 1 1.6-1.8" stroke="var(--want)"/></svg>
+      <div><div class="bt">CSV一括登録 + ジャケット自動取得</div>
+      <div class="bd">CSV登録と同時に、各レコードをiTunesで自動検索してジャケットも設定します。400件で数分かかります(通信状況による)</div></div>
+    </button>
     <button class="batchopt tmpl" id="tplBtn">
       <svg viewBox="0 0 24 24"><path d="M14 3H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V9z"/><path d="M14 3v6h6"/><path d="M8 13h8M8 17h5"/></svg>
       <div><div class="bt">CSVテンプレートをダウンロード</div>
@@ -471,6 +477,20 @@ header h1 small{display:block;font-weight:500;font-size:9.5px;letter-spacing:.24
     <input type="file" id="fileAuto" accept="image/*" multiple hidden>
     <input type="file" id="fileImp" accept=".json,application/json" hidden>
     <button class="ghost" id="btnCloseBatch">閉じる</button>
+  </div>
+</div>
+
+<!-- auto-fetch progress sheet -->
+<div class="sheet" id="autoProgSheet">
+  <div class="panel" style="text-align:center">
+    <div class="grip"></div>
+    <h2 style="margin-bottom:8px">ジャケットを自動取得中</h2>
+    <div id="apStatus" style="font-size:15px;color:var(--muted);margin-bottom:16px">準備中...</div>
+    <div style="height:10px;border-radius:999px;background:var(--surface2);overflow:hidden;margin-bottom:16px">
+      <div id="apBar" style="height:100%;width:0%;background:var(--want);border-radius:999px;transition:width .2s"></div>
+    </div>
+    <div id="apCounts" style="font-size:13px;color:var(--muted);margin-bottom:18px"></div>
+    <button class="ghost" id="apStop" style="margin-top:0">中止してここまでの結果を保存</button>
   </div>
 </div>
 
@@ -1119,6 +1139,93 @@ function mapHeader(h){
   return map;
 }
 
+/* ================= CSV一括登録 + ジャケット自動取得 ================= */
+function itunesSearchOnce(q,timeoutMs){
+  return new Promise((resolve)=>{
+    const cbName='_itAutoCb_'+Date.now()+'_'+Math.floor(Math.random()*1e6);
+    const timer=setTimeout(()=>{window[cbName]=null;resolve([]);},timeoutMs||8000);
+    window[cbName]=(data)=>{clearTimeout(timer);window[cbName]=null;resolve(data.results||[]);};
+    const sc=document.createElement('script');
+    sc.src=`https://itunes.apple.com/search?term=${encodeURIComponent(q)}&media=music&entity=album&limit=1&country=JP&callback=${cbName}`;
+    sc.onerror=()=>{clearTimeout(timer);window[cbName]=null;resolve([]);};
+    sc.onload=()=>sc.remove();
+    document.head.appendChild(sc);
+  });
+}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+
+let autoAbort=false;
+$('csvAutoBtn').addEventListener('click',()=>$('fileCSVAuto').click());
+$('apStop').addEventListener('click',()=>{autoAbort=true;});
+$('fileCSVAuto').addEventListener('change',async e=>{
+  const f=e.target.files[0];e.target.value='';
+  if(!f)return;
+  let rows;
+  try{
+    const text=await readCSVText(f);
+    rows=parseCSV(text);
+  }catch(err){toast('CSVの読み込みに失敗しました');return;}
+  if(rows.length<2){toast('データ行がありません');return;}
+  const map=mapHeader(rows[0]);
+  if(map.title==null||map.artist==null){
+    toast('ヘッダーに「タイトル」「アーティスト」が必要です');return;
+  }
+
+  /* 1. まずメタデータを全件登録(画像なし) */
+  const entries=[];
+  const base=Date.now();
+  for(let i=1;i<rows.length;i++){
+    const r=rows[i];
+    const get=k=>map[k]!=null?String(r[map[k]]??'').trim():'';
+    const title=get('title'),artist=get('artist');
+    if(!title||!artist)continue;
+    let url=get('url');
+    if(url&&!/^https?:\/\//i.test(url))url='https://'+url;
+    const status=/購入|欲|want|wish/i.test(get('status'))?'want':'owned';
+    const fav=/^(1|true|yes|y|○|〇|◯)$/i.test(get('fav'));
+    const rec={title,artist,year:get('year'),genre:get('genre'),memo:get('memo'),url,status,fav,image:null,image_url:null,createdAt:base+i};
+    rec.id=await dbPut(rec);
+    entries.push(rec);
+  }
+  records=(await dbAll()).map(norm);
+  $('batchSheet').classList.remove('open');
+  closeForm();
+  refreshViews();
+  if(!entries.length){toast('登録できる行がありませんでした');return;}
+
+  /* 2. 進捗シートを表示しながら1件ずつiTunes検索してジャケットを設定 */
+  autoAbort=false;
+  $('autoProgSheet').classList.add('open');
+  let found=0,notfound=0;
+  for(let i=0;i<entries.length;i++){
+    if(autoAbort)break;
+    const rec=entries[i];
+    $('apStatus').textContent=`${esc(rec.artist)} - ${esc(rec.title)}`;
+    $('apBar').style.width=`${Math.round((i/entries.length)*100)}%`;
+    $('apCounts').textContent=`${i+1} / ${entries.length} 件　(取得済み ${found} / 未取得 ${notfound})`;
+    try{
+      const results=await itunesSearchOnce(`${rec.artist} ${rec.title}`);
+      if(results.length){
+        const thumb=(results[0].artworkUrl100||'').replace('100x100','600x600');
+        if(thumb){
+          rec.image_url=thumb;
+          await dbPut(rec);
+          found++;
+        }else notfound++;
+      }else notfound++;
+    }catch(err){notfound++;}
+    await sleep(120);   /* iTunes側のレート制限を避けるための間隔 */
+  }
+  $('apBar').style.width='100%';
+  $('autoProgSheet').classList.remove('open');
+  records=(await dbAll()).map(norm);
+  refreshViews();
+  toast(autoAbort
+    ? `中止しました(ジャケット取得 ${found}件 / 未取得 ${notfound}件)`
+    : `完了: ${entries.length}件登録、ジャケット取得 ${found}件 / 未取得 ${notfound}件`);
+});
+
+
 /* ================= 写真まとめて登録 ================= */
 let bulkFiles=[],bulkIdx=0,bulkBlob=null,bulkDone=0,bStatus='owned';
 $('bulkPhotoBtn').addEventListener('click',()=>$('fileBulk').click());
@@ -1539,7 +1646,7 @@ $('btnCloseSort').addEventListener('click',()=>$('sortSheet').classList.remove('
 
 /* 背景タップで閉じる(トリミング・一括登録シートは除外) */
 document.querySelectorAll('.sheet').forEach(s=>{
-  if(s.id==='cropSheet'||s.id==='bulkSheet')return;
+  if(s.id==='cropSheet'||s.id==='bulkSheet'||s.id==='autoProgSheet')return;
   s.addEventListener('click',e=>{if(e.target===s)s.classList.remove('open')});
 });
 

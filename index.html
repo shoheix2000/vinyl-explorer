@@ -446,7 +446,7 @@ header h1 small{display:block;font-weight:500;font-size:9.5px;letter-spacing:.24
     <button class="batchopt" id="csvAutoBtn">
       <svg viewBox="0 0 24 24"><path d="M12 3v12M12 15l-4-4M12 15l4-4"/><path d="M4 17v3h16v-3"/><circle cx="18.5" cy="5.5" r="3.2" fill="var(--surface)" stroke="var(--want)"/><path d="M17 5.5l1 1 1.6-1.8" stroke="var(--want)"/></svg>
       <div><div class="bt">CSV一括登録 + ジャケット自動取得</div>
-      <div class="bd">CSV登録と同時に、各レコードをiTunesで自動検索してジャケットも設定します。400件で数分かかります(通信状況による)</div></div>
+      <div class="bd">CSV登録と同時に、各レコードを複数条件で自動検索してジャケットを設定します(日本/米国カタログ、表記ゆれに対応)。400件で10分前後かかります</div></div>
     </button>
     <button class="batchopt tmpl" id="tplBtn">
       <svg viewBox="0 0 24 24"><path d="M14 3H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V9z"/><path d="M14 3v6h6"/><path d="M8 13h8M8 17h5"/></svg>
@@ -1140,19 +1140,77 @@ function mapHeader(h){
 }
 
 /* ================= CSV一括登録 + ジャケット自動取得 ================= */
-function itunesSearchOnce(q,timeoutMs){
+function itunesSearchOnce(q,country,timeoutMs){
   return new Promise((resolve)=>{
     const cbName='_itAutoCb_'+Date.now()+'_'+Math.floor(Math.random()*1e6);
     const timer=setTimeout(()=>{window[cbName]=null;resolve([]);},timeoutMs||8000);
     window[cbName]=(data)=>{clearTimeout(timer);window[cbName]=null;resolve(data.results||[]);};
     const sc=document.createElement('script');
-    sc.src=`https://itunes.apple.com/search?term=${encodeURIComponent(q)}&media=music&entity=album&limit=1&country=JP&callback=${cbName}`;
+    sc.src=`https://itunes.apple.com/search?term=${encodeURIComponent(q)}&media=music&entity=album&limit=5&country=${country||'JP'}&callback=${cbName}`;
     sc.onerror=()=>{clearTimeout(timer);window[cbName]=null;resolve([]);};
     sc.onload=()=>sc.remove();
     document.head.appendChild(sc);
   });
 }
 function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+
+/* ---- ジャケット検索ヒット率を上げるための補助関数 ---- */
+function normStr(s){
+  return String(s||'').toLowerCase()
+    .replace(/[\(\[（【].*?[\)\]）】]/g,' ')   /* 括弧内(Remaster/Deluxe等)を除去 */
+    .replace(/[^\p{L}\p{N}]+/gu,' ')
+    .trim();
+}
+function scoreMatch(a,b){
+  if(!a||!b)return 0;
+  if(a===b)return 1;
+  if(b.includes(a)||a.includes(b))return 0.85;
+  const aw=a.split(' ').filter(Boolean),bw=b.split(' ').filter(Boolean);
+  if(!aw.length||!bw.length)return 0;
+  const bset=new Set(bw);
+  let inter=0; aw.forEach(w=>{if(bset.has(w))inter++;});
+  return inter/new Set([...aw,...bw]).size;
+}
+function pickBestResult(results,rec){
+  const nt=normStr(rec.title), na=normStr(rec.artist);
+  let best=null,bestScore=0;
+  for(const r of results){
+    const rt=normStr(r.collectionName||r.trackName||'');
+    const ra=normStr(r.artistName||'');
+    const s=scoreMatch(nt,rt)*0.7+scoreMatch(na,ra)*0.3;
+    if(s>bestScore){bestScore=s;best=r;}
+  }
+  return bestScore>=0.42?best:null;
+}
+/* 1レコードにつき複数パターンで検索し、ヒット率を上げる
+   (通常盤の検索語→US配信カタログ→括弧を除いたタイトルの順に試行) */
+async function autoFindCover(rec){
+  const cleanTitle=normStr(rec.title)!==normStr(rec.title.replace(/[\(\[（【].*?[\)\]）】]/g,''))
+    ? rec.title.replace(/[\(\[（【].*?[\)\]）】]/g,'').trim()
+    : null;
+  const attempts=[
+    {term:`${rec.artist} ${rec.title}`,country:'JP'},
+    {term:`${rec.artist} ${rec.title}`,country:'US'},
+  ];
+  if(cleanTitle){
+    attempts.push({term:`${rec.artist} ${cleanTitle}`,country:'JP'});
+    attempts.push({term:`${rec.artist} ${cleanTitle}`,country:'US'});
+  }
+  attempts.push({term:rec.title,country:'US'});
+  const seen=new Set();
+  for(const at of attempts){
+    const key=at.term+'|'+at.country;
+    if(seen.has(key))continue;
+    seen.add(key);
+    const results=await itunesSearchOnce(at.term,at.country);
+    if(results.length){
+      const best=pickBestResult(results,rec);
+      if(best&&best.artworkUrl100)return best.artworkUrl100.replace('100x100','600x600');
+    }
+    await sleep(110);
+  }
+  return null;
+}
 
 let autoAbort=false;
 $('csvAutoBtn').addEventListener('click',()=>$('fileCSVAuto').click());
@@ -1209,17 +1267,14 @@ $('fileCSVAuto').addEventListener('change',async e=>{
       $('apBar').style.width=`${Math.round((i/entries.length)*100)}%`;
       $('apCounts').textContent=`${i+1} / ${entries.length} 件　(取得済み ${found} / 未取得 ${notfound})`;
       try{
-        const results=await itunesSearchOnce(`${rec.artist} ${rec.title}`);
-        if(results.length){
-          const thumb=(results[0].artworkUrl100||'').replace('100x100','600x600');
-          if(thumb){
-            rec.image_url=thumb;
-            await dbPut(rec);
-            found++;
-          }else notfound++;
+        const thumb=await autoFindCover(rec);
+        if(thumb){
+          rec.image_url=thumb;
+          await dbPut(rec);
+          found++;
         }else notfound++;
       }catch(err){notfound++;}
-      await sleep(120);   /* iTunes側のレート制限を避けるための間隔 */
+      await sleep(80);   /* レコード間の間隔(検索カスケード内にも個別の間隔あり) */
     }
     $('apBar').style.width='100%';
     $('autoProgSheet').classList.remove('open');

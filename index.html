@@ -279,9 +279,9 @@ header h1 small{display:block;font-weight:500;font-size:9.5px;letter-spacing:.24
 #dStatusBtn.owned svg{stroke:#fff;fill:#fff}
 #dStatusBtn.want{border-color:rgba(88,207,192,.5);background:rgba(88,207,192,.14);color:var(--want)}
 #dStatusBtn.want svg{stroke:var(--want);fill:none}
-#dTitle{font-size:26px;font-weight:800;text-align:center;letter-spacing:.01em;line-height:1.4}
-#dArtist{text-align:center;font-size:16px;font-weight:600;letter-spacing:.16em;color:var(--accent);margin-top:6px;text-transform:uppercase}
-#dMeta{text-align:center;font-size:15.5px;color:var(--muted);margin-top:8px;letter-spacing:.05em}
+#dTitle{font-size:26px;font-weight:800;text-align:center;letter-spacing:.01em;line-height:1.4;min-height:calc(26px * 1.4 * 2)}
+#dArtist{text-align:center;font-size:16px;font-weight:600;letter-spacing:.16em;color:var(--accent);margin-top:6px;text-transform:uppercase;min-height:calc(16px * 1.3 * 2);line-height:1.3}
+#dMeta{text-align:center;font-size:15.5px;color:var(--muted);margin-top:8px;letter-spacing:.05em;min-height:calc(15.5px * 1.3)}
 #dLink{display:none;align-items:center;gap:8px;margin-top:14px;padding:13px;background:var(--surface2);border-radius:10px;max-width:100%}
 #dLink svg{width:18px;height:18px;flex-shrink:0;stroke:var(--accent);fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 #dLink a{flex:1;min-width:0;font-size:16px;text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -328,10 +328,15 @@ header h1 small{display:block;font-weight:500;font-size:9.5px;letter-spacing:.24
 #toast.show{opacity:1;transform:translateX(-50%)}
 /* ランドスケープ(横画面): キャプションを小さくしてジャケットを大きく表示 */
 @media (orientation:landscape) and (max-height:560px){
-  #segWrap{top:calc(env(safe-area-inset-top) + 56px)}
-  #stage{margin-top:calc(env(safe-area-inset-top) + 100px)}
-  .card{top:42%;width:min(38vh,240px)}
-  #caption{padding:0 24px calc(env(safe-area-inset-bottom) + 12px);min-height:0}
+  /* 所有/購入予定トグルを左下へ移動し、上部・中央のスペースをジャケット表示に使う */
+  #segWrap{
+    left:14px;right:auto;bottom:max(12px,calc(env(safe-area-inset-bottom) - 4px));top:auto;
+    transform:none;
+  }
+  .seg{min-width:0;padding:7px 14px;font-size:12px}
+  #stage{margin-top:calc(env(safe-area-inset-top) + 46px)}
+  .card{top:44%;width:min(52vh,320px)}
+  #caption{padding:0 24px calc(env(safe-area-inset-bottom) + 10px);min-height:0}
   #caption .title{font-size:17px;line-height:1.2}
   #caption .title .hh{font-size:15px}
   #caption .artist{margin-top:2px;font-size:11px;letter-spacing:.1em}
@@ -1732,24 +1737,45 @@ function renderDetail(rec){
   $('dFav').classList.toggle('on',!!rec.fav);
   $('dFavLabel').textContent=rec.fav?'お気に入り登録済み':'お気に入り';
 }
+/* 詳細画面を開いた時点のリストを「閲覧スナップショット」として保持し、
+   フリック中にステータスを変更しても閲覧中のリストは変化させない */
+let detailBrowseList=[];
+let detailBrowseIdx=-1;
 function openDetail(id){
   const rec=records.find(r=>r.id===id);
   if(!rec)return;
   detailId=id;
+  detailBrowseList=visible();
+  detailBrowseIdx=detailBrowseList.findIndex(r=>r.id===id);
   renderDetail(rec);
   $('detailSheet').classList.add('open');
 }
 /* 詳細画面での左右フリック(スワイプ)で前後のレコードへ移動 */
 function detailNav(dir){
-  const list=visible();
-  const idx=list.findIndex(r=>r.id===detailId);
-  if(idx<0)return;
-  const ni=idx+dir;
-  if(ni<0||ni>=list.length)return;
-  const nrec=list[ni];
+  if(!detailBrowseList.length||detailBrowseIdx<0)return;
+  const ni=detailBrowseIdx+dir;
+  if(ni<0||ni>=detailBrowseList.length)return;
+  detailBrowseIdx=ni;
+  const nrec=detailBrowseList[ni];
   detailId=nrec.id;
-  cur=ni;   /* カバーフロー側の位置も同期 */
   renderDetail(nrec);
+}
+/* 詳細画面を閉じる:表示中レコードのステータスに応じて一覧側の所有/購入予定を同期し、
+   フリックで移動した先のジャケットが一覧側でも選択された状態に揃える */
+function closeDetailSheet(){
+  $('detailSheet').classList.remove('open');
+  const rec=records.find(r=>r.id===detailId);
+  if(rec){
+    if(rec.status!==curStatus){
+      curByStatus[curStatus]=cur;
+      curStatus=rec.status;
+      document.querySelectorAll('#segWrap .seg').forEach(x=>x.classList.toggle('active',x.dataset.st===curStatus));
+    }
+    const list=visible();
+    const idx=list.findIndex(r=>r.id===rec.id);
+    cur=idx>=0?idx:0;
+  }
+  refreshViews();
 }
 (function(){
   const panel=$('detailPanel');
@@ -1765,6 +1791,11 @@ function detailNav(dir){
     /* 横方向の移動が縦より十分大きい場合のみフリックとして扱う */
     if(Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy)*1.6){
       detailNav(dx<0?1:-1);   /* 左フリック=次、右フリック=前 */
+      return;
+    }
+    /* 下方向への十分なスワイプで閉じる(パネルが一番上までスクロールされている時のみ) */
+    if(dy>70&&dy>Math.abs(dx)*1.4&&panel.scrollTop<=0){
+      closeDetailSheet();
     }
   },{passive:true});
 })();
@@ -1787,12 +1818,9 @@ $('dStatusBtn').addEventListener('click',async()=>{
   sb.className=rec.status==='want'?'want':'owned';
   $('dStatusBtnLabel').textContent=rec.status==='want'?'購入予定':'所有';
   toast(rec.status==='want'?'「購入予定」に変更しました':'「所有」に変更しました');
-  /* 表示中のリストから外れるため詳細を閉じて一覧を更新 */
-  $('detailSheet').classList.remove('open');
-  cur=0;
-  refreshViews();
+  /* この場では一覧を更新せず、詳細画面はそのまま。一覧との同期は閉じた時に行う */
 });
-$('btnCloseDetail').addEventListener('click',()=>$('detailSheet').classList.remove('open'));
+$('btnCloseDetail').addEventListener('click',closeDetailSheet);
 $('btnEdit').addEventListener('click',()=>{
   const rec=records.find(r=>r.id===detailId);
   $('detailSheet').classList.remove('open');

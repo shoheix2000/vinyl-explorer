@@ -97,11 +97,24 @@ header h1 small{display:block;font-weight:500;font-size:9.5px;letter-spacing:.24
 }
 .card .refl img{width:100%;height:100%;object-fit:cover;object-position:top}
 
-#caption{text-align:center;padding:0 24px calc(env(safe-area-inset-bottom) + 92px);min-height:128px}
-#caption .title{font-size:28px;font-weight:800;letter-spacing:.01em;line-height:1.35}
+#caption{text-align:center;padding:0 24px calc(env(safe-area-inset-bottom) + 92px)}
+/* タイトル・アーティスト名・年代欄を常に一定の高さに固定し、
+   はみ出す文字は省略(...)表示にすることで、上のジャケット表示領域の高さが
+   テキスト量によって変動しないようにする */
+#capText{height:132px;overflow:hidden}
+#caption .title{
+  font-size:28px;font-weight:800;letter-spacing:.01em;line-height:1.35;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+}
 #caption .title .hh{color:var(--heart);margin-left:6px;font-size:23px}
-#caption .artist{margin-top:6px;font-size:16px;font-weight:600;letter-spacing:.16em;color:var(--accent);text-transform:uppercase}
-#caption .meta{margin-top:6px;font-size:15px;letter-spacing:.08em;color:var(--muted)}
+#caption .artist{
+  margin-top:6px;font-size:16px;font-weight:600;letter-spacing:.16em;color:var(--accent);text-transform:uppercase;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+#caption .meta{
+  margin-top:6px;font-size:15px;letter-spacing:.08em;color:var(--muted);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
 #counter{
   width:fit-content;margin:0 auto 10px;
   height:36px;display:none;align-items:center;gap:7px;
@@ -265,15 +278,20 @@ header h1 small{display:block;font-weight:500;font-size:9.5px;letter-spacing:.24
 #dCover{width:min(66vw,270px);aspect-ratio:1/1;border-radius:13%;object-fit:cover;display:block;margin:4px auto 10px;
   box-shadow:0 16px 40px rgba(10,16,30,.55)}
 /* 詳細画面: ジャケット~タイトル周り(#dTop)を上部に固定し、
-   長いメモ等の内容は下部(#dScroll)だけがスクロールするようにする */
+   長いメモ等の内容は下部(#dScroll)だけがスクロールするようにする。
+   dvhは環境により不安定なため、親(.sheet, position:fixed;inset:0)基準の%指定にする */
 #detailPanel{
   position:relative;display:flex;flex-direction:column;
-  height:88dvh;max-height:88dvh;overflow:hidden;padding-bottom:0;
+  height:88%;max-height:88%;overflow:hidden;padding-bottom:0;
 }
-#dTop{flex-shrink:0;position:relative}
+#dTop{
+  flex-shrink:0;position:relative;
+  border-bottom:1px solid var(--line);
+  margin:0 -20px;padding:0 20px 14px;
+}
 #dScroll{
-  flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;
-  padding-bottom:calc(env(safe-area-inset-bottom) + 20px);
+  flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
+  padding:14px 0 calc(env(safe-area-inset-bottom) + 20px);
 }
 #dActions{display:flex;gap:10px;justify-content:center;margin:0 auto 12px}
 #dFav,#dStatusBtn{
@@ -346,7 +364,8 @@ header h1 small{display:block;font-weight:500;font-size:9.5px;letter-spacing:.24
   .seg{min-width:0;padding:7px 14px;font-size:12px}
   #stage{margin-top:calc(env(safe-area-inset-top) + 46px)}
   .card{top:44%;width:min(52vh,320px)}
-  #caption{padding:0 24px calc(env(safe-area-inset-bottom) + 10px);min-height:0}
+  #caption{padding:0 24px calc(env(safe-area-inset-bottom) + 10px)}
+  #capText{height:60px}
   #caption .title{font-size:17px;line-height:1.2}
   #caption .title .hh{font-size:15px}
   #caption .artist{margin-top:2px;font-size:11px;letter-spacing:.1em}
@@ -387,9 +406,11 @@ header h1 small{display:block;font-weight:500;font-size:9.5px;letter-spacing:.24
   <div id="stage"></div>
   <div id="counter"></div>
   <div id="caption">
-    <div class="title" id="cTitle"></div>
-    <div class="artist" id="cArtist"></div>
-    <div class="meta" id="cMeta"></div>
+    <div id="capText">
+      <div class="title" id="cTitle"></div>
+      <div class="artist" id="cArtist"></div>
+      <div class="meta" id="cMeta"></div>
+    </div>
   </div>
   <div id="empty">
     <div class="ering"></div>

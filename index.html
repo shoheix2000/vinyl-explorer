@@ -27,6 +27,7 @@
 html,body{height:100%;overflow:hidden;overscroll-behavior:none}
 body{
   background:var(--bg);color:var(--text);font-family:var(--font);
+  font-variant-numeric:proportional-nums;   /* 数字を等幅ではなくプロポーショナルに */
   background-image:radial-gradient(ellipse 120% 60% at 50% -10%,var(--bgHi) 0%,var(--bg) 60%);
   user-select:none;-webkit-user-select:none;
 }
@@ -43,15 +44,16 @@ header{
 }
 header h1{font-size:18px;font-weight:800;letter-spacing:.03em;white-space:nowrap}
 header h1 small{display:block;font-weight:500;font-size:9.5px;letter-spacing:.24em;color:var(--muted);margin-top:2px}
-.hbtns{display:flex;gap:10px;flex-shrink:0}
+.hbtns{display:flex;gap:8px;flex-shrink:0}
 .iconbtn{
   width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;
   background:rgba(255,255,255,.08);border:1px solid var(--line);color:var(--text);
 }
 .iconbtn svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 .iconbtn.active{background:var(--btn);border-color:var(--btn);color:#fff}
-/* 表示切替ボタンは使用頻度が高いため大きめに */
-#btnView{width:50px;height:50px;border-radius:14px}
+/* 検索・並べ替え・表示切替は使用頻度が高いため大きめに統一 */
+#btnSearch,#btnSort,#btnView{width:50px;height:50px;border-radius:14px}
+#btnSearch svg,#btnSort svg{width:24px;height:24px}
 #btnView svg{width:26px;height:26px}
 
 /* ===== 所有/購入予定 ===== */
@@ -139,6 +141,24 @@ header h1 small{display:block;font-weight:500;font-size:9.5px;letter-spacing:.24
 }
 #counter b{font-size:16px;font-weight:800;color:#fff;letter-spacing:.02em}
 #counter .sep{opacity:.55;margin:0 1px}
+/* 3列一覧表示でも登録枚数を同じ見た目のバッジで表示(お気に入りボタンと＋ボタンの間) */
+#gridCounter{
+  position:fixed;left:50%;transform:translateX(-50%);z-index:20;
+  bottom:max(15px, calc(env(safe-area-inset-bottom) + 9px));
+  width:fit-content;height:36px;display:none;align-items:center;gap:7px;
+  padding:0 15px;border-radius:999px;white-space:nowrap;
+  background:linear-gradient(160deg,rgba(10,18,36,.9),rgba(18,34,62,.75));
+  border:1px solid rgba(255,255,255,.22);
+  box-shadow:0 4px 14px rgba(10,20,45,.35),inset 0 1px 0 rgba(255,255,255,.12);
+  font-size:13px;color:var(--muted);
+}
+#gridCounter.show{display:flex}
+#gridCounter .cd{
+  width:13px;height:13px;border-radius:50%;flex-shrink:0;
+  background:radial-gradient(circle,#060c18 0 22%,var(--accent) 22% 42%,#0d1626 42% 100%);
+  box-shadow:0 0 5px rgba(188,216,255,.4);
+}
+#gridCounter b{font-size:16px;font-weight:800;color:#fff;letter-spacing:.02em}
 
 /* ===== grid ===== */
 #gridView{
@@ -431,7 +451,7 @@ header h1 small{display:block;font-weight:500;font-size:9.5px;letter-spacing:.24
   </div>
 </div>
 
-<div id="gridView"><div id="grid"></div></div>
+<div id="gridView"><div id="grid"></div><div id="gridCounter"></div></div>
 
 <button id="fab" aria-label="レコードを追加">
   <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
@@ -525,6 +545,23 @@ header h1 small{display:block;font-weight:500;font-size:9.5px;letter-spacing:.24
       <svg viewBox="0 0 24 24"><path d="M5 17l4-9 3 6 2-3 5 6z"/><rect x="3" y="4" width="18" height="16" rx="2"/></svg>
       <div><div class="bt">画像ファイル名から自動登録</div>
       <div class="bd">「アーティスト - タイトル.jpg」形式のファイルを一括選択。同名の画像なしレコードがあれば割り当て、なければ新規登録(中央を自動トリミング)。PCでの大量登録向け</div></div>
+    </button>
+    <div class="orline2">Firebase同期(Mac・iPhoneで共有)</div>
+    <div id="fbStatusLine" style="font-size:13px;color:var(--muted);text-align:center;margin-bottom:12px">未設定です</div>
+    <button class="batchopt" id="fbSetupBtn">
+      <svg viewBox="0 0 24 24"><path d="M12 3l8 4v6c0 4.5-3.4 7.7-8 9-4.6-1.3-8-4.5-8-9V7z"/><path d="M9 12l2 2 4-4"/></svg>
+      <div><div class="bt">Firebase設定を開く</div>
+      <div class="bd">未設定なら接続情報を入力、設定済みならログイン状態を確認・変更します</div></div>
+    </button>
+    <button class="batchopt" id="fbMigrateBtn">
+      <svg viewBox="0 0 24 24"><path d="M12 15V3M12 3L8 7M12 3l4 4"/><path d="M4 17v3h16v-3"/><path d="M4 21h16" stroke="var(--want)"/></svg>
+      <div><div class="bt">この端末のデータをFirebaseへアップロード</div>
+      <div class="bd">ログイン後、この端末に保存済みのレコードを全てFirebaseへ送ります。初回の移行時に1回だけ使用します</div></div>
+    </button>
+    <button class="batchopt" id="fbLogoutBtn">
+      <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+      <div><div class="bt">ログアウト</div>
+      <div class="bd">この端末をFirebaseからログアウトします</div></div>
     </button>
     <div class="orline2">データ移行</div>
     <button class="batchopt" id="expBtn">
@@ -694,6 +731,43 @@ header h1 small{display:block;font-weight:500;font-size:9.5px;letter-spacing:.24
 
 <div id="toast"></div>
 
+<!-- Firebase設定・ログイン画面(未設定の場合のみ表示) -->
+<div class="sheet" id="fbConfigScreen" style="z-index:300;background:var(--bg);backdrop-filter:none;justify-content:center">
+  <div class="panel" style="min-height:auto;margin:0 auto;border-radius:20px;max-width:480px;width:92%;max-height:90dvh">
+    <div class="grip"></div>
+    <h2>Firebase設定</h2>
+    <p style="font-size:14px;color:var(--muted);line-height:1.8;margin-bottom:14px">
+      Mac・iPhoneでレコード情報を共有したい場合は、Firebaseプロジェクトの接続情報(firebaseConfig)を貼り付けてください。<br>
+      設定しない場合は、この端末だけで使う従来通りの動作になります。
+    </p>
+    <div class="field">
+      <label>firebaseConfig(JSON)</label>
+      <textarea id="fbConfigInput" rows="8" placeholder='{"apiKey": "...", "authDomain": "...", "projectId": "...", ...}' style="font-family:monospace;font-size:13px;width:100%;background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:12px;color:var(--text)"></textarea>
+    </div>
+    <button class="primary" id="fbConfigSaveBtn">保存して次へ</button>
+    <button class="ghost" id="fbSkipBtn">この端末だけで使う(あとで設定できます)</button>
+    <div id="fbConfigErr" style="color:var(--danger);font-size:13px;margin-top:10px;text-align:center"></div>
+  </div>
+</div>
+
+<div class="sheet" id="fbLoginScreen" style="z-index:300;background:var(--bg);backdrop-filter:none;justify-content:center">
+  <div class="panel" style="min-height:auto;margin:0 auto;border-radius:20px;max-width:420px;width:92%;max-height:90dvh">
+    <div class="grip"></div>
+    <h2>ログイン</h2>
+    <p style="font-size:14px;color:var(--muted);line-height:1.8;margin-bottom:14px">Firebaseの「Authentication」で作成したメールアドレスとパスワードでログインしてください。</p>
+    <div class="field"><label>メールアドレス</label><input id="fbEmail" type="email" autocomplete="username" inputmode="email"></div>
+    <div class="field"><label>パスワード</label><input id="fbPass" type="password" autocomplete="current-password"></div>
+    <button class="primary" id="fbLoginBtn">ログイン</button>
+    <button class="ghost" id="fbConfigRedoBtn">Firebase設定をやり直す</button>
+    <div id="fbLoginErr" style="color:var(--danger);font-size:13px;margin-top:10px;text-align:center"></div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+
 <script>
 'use strict';
 /* ================= 定数 ================= */
@@ -735,10 +809,56 @@ function openDB(){
   });
 }
 const tx=(mode)=>db.transaction(STORE,mode).objectStore(STORE);
-const dbAll=()=>new Promise((res,rej)=>{const r=tx('readonly').getAll();r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});
-const dbPut=(rec)=>new Promise((res,rej)=>{const r=tx('readwrite').put(rec);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});
-const dbDel=(id)=>new Promise((res,rej)=>{const r=tx('readwrite').delete(id);r.onsuccess=()=>res();r.onerror=()=>rej(r.error)});
-const dbClear=()=>new Promise((res,rej)=>{const r=tx('readwrite').clear();r.onsuccess=()=>res();r.onerror=()=>rej(r.error)});
+const idbAll=()=>new Promise((res,rej)=>{const r=tx('readonly').getAll();r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});
+const idbPut=(rec)=>new Promise((res,rej)=>{const r=tx('readwrite').put(rec);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});
+const idbDel=(id)=>new Promise((res,rej)=>{const r=tx('readwrite').delete(id);r.onsuccess=()=>res();r.onerror=()=>rej(r.error)});
+const idbClear=()=>new Promise((res,rej)=>{const r=tx('readwrite').clear();r.onsuccess=()=>res();r.onerror=()=>rej(r.error)});
+
+/* ================= Firebase(Firestore + Storage) ================= */
+let fbUser=null, firebaseActive=false;
+function fsCol(){
+  return firebase.firestore().collection('users').doc(fbUser.uid).collection('records');
+}
+async function fsPut(rec){
+  const col=fsCol();
+  const id=rec.id!=null?String(rec.id):col.doc().id;
+  const data={...rec};
+  delete data.id;
+  if(data.image instanceof Blob){
+    const ref=firebase.storage().ref(`users/${fbUser.uid}/covers/${id}.jpg`);
+    await ref.put(data.image,{contentType:'image/jpeg'});
+    data.image_url=await ref.getDownloadURL();
+  }
+  delete data.image;
+  Object.keys(data).forEach(k=>{if(data[k]===undefined)delete data[k];});
+  await col.doc(id).set(data);
+  return id;
+}
+async function fsAll(){
+  const snap=await fsCol().get();
+  return snap.docs.map(d=>({id:d.id,...d.data()}));
+}
+async function fsDel(id){
+  try{await firebase.storage().ref(`users/${fbUser.uid}/covers/${id}.jpg`).delete();}catch(e){/* 画像なし/URL参照のみは無視 */}
+  await fsCol().doc(String(id)).delete();
+}
+async function fsClear(){
+  const snap=await fsCol().get();
+  const docs=snap.docs;
+  for(let i=0;i<docs.length;i+=400){
+    const batch=firebase.firestore().batch();
+    docs.slice(i,i+400).forEach(d=>batch.delete(d.ref));
+    await batch.commit();
+  }
+  for(const d of docs){
+    try{await firebase.storage().ref(`users/${fbUser.uid}/covers/${d.id}.jpg`).delete();}catch(e){}
+  }
+}
+/* アプリ内から呼ぶ実際の窓口。Firebaseにログイン中はFirestore、そうでなければ端末内IndexedDBを使う */
+const dbAll=()=>firebaseActive?fsAll():idbAll();
+const dbPut=(rec)=>firebaseActive?fsPut(rec):idbPut(rec);
+const dbDel=(id)=>firebaseActive?fsDel(id):idbDel(id);
+const dbClear=()=>firebaseActive?fsClear():idbClear();
 
 /* ================= state ================= */
 let records=[];
@@ -907,7 +1027,8 @@ window.addEventListener('resize',()=>layout(0));
 /* ================= grid ================= */
 function buildGrid(){
   const g=$('grid');g.innerHTML='';
-  visible().forEach(rec=>{
+  const list=visible();
+  list.forEach(rec=>{
     const cell=document.createElement('button');
     cell.className='gcell';
     cell.innerHTML=`<img src="${urlOf(rec)}" alt="${esc(rec.title)}">`+
@@ -915,6 +1036,9 @@ function buildGrid(){
     cell.addEventListener('click',()=>{openedFrom='list';openDetail(rec.id);});
     g.appendChild(cell);
   });
+  const gc=$('gridCounter');
+  gc.classList.toggle('show',list.length>0);
+  if(list.length)gc.innerHTML=`<span class="cd"></span><b>${list.length}</b>枚`;
 }
 
 /* ================= 表示切替 ================= */
@@ -1984,7 +2108,7 @@ $('btnCloseSort').addEventListener('click',()=>$('sortSheet').classList.remove('
 
 /* 背景タップで閉じる(トリミング・一括登録シートは除外) */
 document.querySelectorAll('.sheet').forEach(s=>{
-  if(s.id==='cropSheet'||s.id==='bulkSheet'||s.id==='autoProgSheet')return;
+  if(s.id==='cropSheet'||s.id==='bulkSheet'||s.id==='autoProgSheet'||s.id==='fbConfigScreen'||s.id==='fbLoginScreen')return;
   s.addEventListener('click',e=>{
     if(e.target!==s)return;
     if(s.id==='detailSheet')closeDetailSheet();
@@ -1992,16 +2116,140 @@ document.querySelectorAll('.sheet').forEach(s=>{
   });
 });
 
-/* ================= init ================= */
-(async()=>{
-  initSelects();
+/* ================= init / Firebase認証 ================= */
+async function startApp(){
   try{
-    await openDB();
+    try{await openDB();}catch(e){/* Firebase運用中はIndexedDBが使えなくても問題ない */}
     records=(await dbAll()).map(norm);
     cur=Math.max(0,visible().length-1);
     buildStage();
   }catch(err){
-    toast('データベースを開けませんでした');
+    toast('データの読み込みに失敗しました');
+  }
+}
+function fbScreen(id){
+  document.querySelectorAll('#fbConfigScreen,#fbLoginScreen').forEach(s=>s.classList.remove('open'));
+  if(id)$(id).classList.add('open');
+}
+function getFbConfig(){
+  try{const s=localStorage.getItem('vinylfb_config');return s?JSON.parse(s):null;}catch(e){return null;}
+}
+function saveFbConfig(cfg){localStorage.setItem('vinylfb_config',JSON.stringify(cfg));}
+function clearFbConfig(){localStorage.removeItem('vinylfb_config');}
+function updateFbStatusLine(){
+  const el=$('fbStatusLine');
+  if(!el)return;
+  if(firebaseActive&&fbUser)el.textContent=`ログイン中: ${fbUser.email}`;
+  else if(getFbConfig())el.textContent='設定済み・未ログイン';
+  else el.textContent='未設定です(この端末のみで動作中)';
+}
+async function bootFirebase(){
+  const cfg=getFbConfig();
+  if(!cfg){fbScreen('fbConfigScreen');updateFbStatusLine();return;}
+  try{
+    if(!firebase.apps.length)firebase.initializeApp(cfg);
+    try{await firebase.firestore().enablePersistence({synchronizeTabs:true});}catch(e){/* 複数タブ等は無視して続行 */}
+  }catch(e){
+    $('fbConfigErr').textContent='Firebase設定の読み込みに失敗しました。内容を確認してください。';
+    fbScreen('fbConfigScreen');
+    return;
+  }
+  firebase.auth().onAuthStateChanged(async user=>{
+    if(user){
+      fbUser=user;firebaseActive=true;
+      fbScreen(null);
+      updateFbStatusLine();
+      await startApp();
+    }else{
+      fbUser=null;firebaseActive=false;
+      updateFbStatusLine();
+      fbScreen('fbLoginScreen');
+    }
+  });
+}
+$('fbConfigSaveBtn').addEventListener('click',()=>{
+  const raw=$('fbConfigInput').value.trim();
+  $('fbConfigErr').textContent='';
+  let cfg;
+  try{cfg=JSON.parse(raw);}
+  catch(e){$('fbConfigErr').textContent='JSON形式が正しくありません。firebaseConfigをそのまま貼り付けてください。';return;}
+  if(!cfg.apiKey||!cfg.projectId){$('fbConfigErr').textContent='必要な項目(apiKey・projectIdなど)が見つかりません。';return;}
+  saveFbConfig(cfg);
+  bootFirebase();
+});
+$('fbSkipBtn').addEventListener('click',()=>{
+  localStorage.setItem('vinylfb_skip','1');
+  fbScreen(null);
+  startApp();
+});
+$('fbLoginBtn').addEventListener('click',async()=>{
+  const email=$('fbEmail').value.trim();
+  const pass=$('fbPass').value;
+  $('fbLoginErr').textContent='';
+  if(!email||!pass){$('fbLoginErr').textContent='メールアドレスとパスワードを入力してください';return;}
+  try{
+    await firebase.auth().signInWithEmailAndPassword(email,pass);
+  }catch(e){
+    $('fbLoginErr').textContent='ログインに失敗しました。メールアドレス・パスワードを確認してください。';
+  }
+});
+$('fbConfigRedoBtn').addEventListener('click',()=>{
+  clearFbConfig();
+  $('fbConfigInput').value='';
+  fbScreen('fbConfigScreen');
+});
+$('fbSetupBtn').addEventListener('click',()=>{
+  $('batchSheet').classList.remove('open');
+  if(firebaseActive){
+    toast(`ログイン中: ${fbUser.email}`);
+    return;
+  }
+  const cfg=getFbConfig();
+  $('fbConfigInput').value=cfg?JSON.stringify(cfg,null,2):'';
+  fbScreen(cfg?'fbLoginScreen':'fbConfigScreen');
+});
+$('fbLogoutBtn').addEventListener('click',()=>{
+  if(!firebaseActive){toast('Firebaseにログインしていません');return;}
+  if(!confirm('ログアウトしますか?'))return;
+  firebase.auth().signOut().then(()=>location.reload());
+});
+$('fbMigrateBtn').addEventListener('click',async()=>{
+  if(!firebaseActive){toast('先にFirebaseへログインしてください');return;}
+  if(!confirm('この端末に保存されているレコードを全てFirebaseへアップロードします。よろしいですか?'))return;
+  let local;
+  try{await openDB();local=await idbAll();}catch(e){toast('ローカルデータの読み込みに失敗しました');return;}
+  if(!local.length){toast('この端末にはアップロードできるローカルデータがありません');return;}
+  $('batchSheet').classList.remove('open');
+  autoAbort=false;
+  $('autoProgSheet').classList.add('open');
+  let ok=0,fail=0;
+  for(let i=0;i<local.length;i++){
+    if(autoAbort)break;
+    const rec=local[i];
+    $('apStatus').textContent=`${esc(rec.artist||'')} - ${esc(rec.title||'')}`;
+    $('apBar').style.width=`${Math.round((i/local.length)*100)}%`;
+    $('apCounts').textContent=`${i+1} / ${local.length} 件　(成功 ${ok} / 失敗 ${fail})`;
+    try{
+      const copy={...rec};delete copy.id;   /* Firestore側で新しいIDを発行させる */
+      await fsPut(copy);
+      ok++;
+    }catch(e){fail++;}
+  }
+  $('apBar').style.width='100%';
+  $('autoProgSheet').classList.remove('open');
+  records=(await dbAll()).map(norm);
+  refreshViews();
+  toast(`アップロード完了: 成功${ok}件 / 失敗${fail}件`);
+});
+
+(function(){
+  initSelects();
+  if(getFbConfig()){
+    bootFirebase();
+  }else if(localStorage.getItem('vinylfb_skip')==='1'){
+    startApp();
+  }else{
+    fbScreen('fbConfigScreen');
   }
 })();
 </script>

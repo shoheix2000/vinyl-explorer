@@ -264,23 +264,24 @@ header h1 small{display:block;font-weight:500;font-size:9.5px;letter-spacing:.24
 /* --- detail --- */
 #dCover{width:min(66vw,270px);aspect-ratio:1/1;border-radius:13%;object-fit:cover;display:block;margin:4px auto 10px;
   box-shadow:0 16px 40px rgba(10,16,30,.55)}
-#dFav{
+#detailPanel{position:relative}
+#dActions{display:flex;gap:10px;justify-content:center;margin:0 auto 12px}
+#dFav,#dStatusBtn{
   display:flex;align-items:center;justify-content:center;gap:7px;
-  margin:0 auto 12px;padding:9px 20px;border-radius:999px;
-  border:1px solid var(--line);background:var(--surface2);font-size:15.5px;color:var(--muted);
+  padding:9px 18px;border-radius:999px;
+  border:1px solid var(--line);background:var(--surface2);font-size:14.5px;color:var(--muted);
 }
-#dFav svg{width:22px;height:22px;stroke:var(--heart);stroke-width:1.9;fill:none;transition:.2s}
+#dFav svg{width:21px;height:21px;stroke:var(--heart);stroke-width:1.9;fill:none;transition:.2s}
 #dFav.on{border-color:rgba(240,106,128,.55);color:var(--heart)}
 #dFav.on svg{fill:var(--heart)}
+#dStatusBtn svg{width:19px;height:19px;stroke-width:1.9;fill:none;transition:.2s}
+#dStatusBtn.owned{border-color:var(--btn);background:var(--btn);color:#fff}
+#dStatusBtn.owned svg{stroke:#fff;fill:#fff}
+#dStatusBtn.want{border-color:rgba(88,207,192,.5);background:rgba(88,207,192,.14);color:var(--want)}
+#dStatusBtn.want svg{stroke:var(--want);fill:none}
 #dTitle{font-size:26px;font-weight:800;text-align:center;letter-spacing:.01em;line-height:1.4}
 #dArtist{text-align:center;font-size:16px;font-weight:600;letter-spacing:.16em;color:var(--accent);margin-top:6px;text-transform:uppercase}
 #dMeta{text-align:center;font-size:15.5px;color:var(--muted);margin-top:8px;letter-spacing:.05em}
-#dStatus{
-  display:block;width:fit-content;margin:10px auto 0;padding:5px 15px;border-radius:999px;
-  font-size:13.5px;font-weight:700;letter-spacing:.14em;
-}
-#dStatus.owned{background:var(--btn);color:#fff;border:1px solid var(--btn)}
-#dStatus.want{background:rgba(88,207,192,.14);color:var(--want);border:1px solid rgba(88,207,192,.45)}
 #dLink{display:none;align-items:center;gap:8px;margin-top:14px;padding:13px;background:var(--surface2);border-radius:10px;max-width:100%}
 #dLink svg{width:18px;height:18px;flex-shrink:0;stroke:var(--accent);fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 #dLink a{flex:1;min-width:0;font-size:16px;text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -325,6 +326,19 @@ header h1 small{display:block;font-weight:500;font-size:9.5px;letter-spacing:.24
   max-width:88vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
 #toast.show{opacity:1;transform:translateX(-50%)}
+/* ランドスケープ(横画面): キャプションを小さくしてジャケットを大きく表示 */
+@media (orientation:landscape) and (max-height:560px){
+  #segWrap{top:calc(env(safe-area-inset-top) + 56px)}
+  #stage{margin-top:calc(env(safe-area-inset-top) + 100px)}
+  .card{top:42%;width:min(38vh,240px)}
+  #caption{padding:0 24px calc(env(safe-area-inset-bottom) + 12px);min-height:0}
+  #caption .title{font-size:17px;line-height:1.2}
+  #caption .title .hh{font-size:15px}
+  #caption .artist{margin-top:2px;font-size:11px;letter-spacing:.1em}
+  #caption .meta{margin-top:2px;font-size:11px}
+  #counter{display:none!important}
+  #fab{width:50px;height:50px;bottom:max(10px,calc(env(safe-area-inset-bottom) - 6px))}
+}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
@@ -474,6 +488,12 @@ header h1 small{display:block;font-weight:500;font-size:9.5px;letter-spacing:.24
       <div><div class="bt">バックアップを読み込み</div>
       <div class="bd">書き出したJSONファイルを取り込みます(タイトル+アーティストが同じレコードはスキップ)</div></div>
     </button>
+    <div class="orline2">危険な操作</div>
+    <button class="batchopt" id="wipeBtn" style="border-color:rgba(226,102,97,.4)">
+      <svg viewBox="0 0 24 24" stroke="var(--danger)"><path d="M4 7h16M9 7V4h6v3M6 7l1 13a2 2 0 002 2h6a2 2 0 002-2l1-13"/></svg>
+      <div><div class="bt" style="color:var(--danger)">全レコードを削除</div>
+      <div class="bd">所有・購入予定を含む全データを完全に削除します(元に戻せません)。別端末へ移す前に、この端末を空にしたい場合などに使用</div></div>
+    </button>
     <input type="file" id="fileAuto" accept="image/*" multiple hidden>
     <input type="file" id="fileImp" accept=".json,application/json" hidden>
     <button class="ghost" id="btnCloseBatch">閉じる</button>
@@ -535,17 +555,25 @@ header h1 small{display:block;font-weight:500;font-size:9.5px;letter-spacing:.24
 
 <!-- detail sheet -->
 <div class="sheet" id="detailSheet">
-  <div class="panel">
+  <div class="panel" id="detailPanel">
     <div class="grip"></div>
-    <img id="dCover" alt="">
-    <button id="dFav" aria-label="お気に入り">
-      <svg viewBox="0 0 24 24"><path d="M12 20s-7-4.6-9.2-8.5C1.2 8.6 2.9 5 6.4 5c2 0 3.5 1.1 4.3 2.6h2.6C14.1 6.1 15.6 5 17.6 5c3.5 0 5.2 3.6 3.6 6.5C19 15.4 12 20 12 20z"/></svg>
-      <span id="dFavLabel">お気に入り</span>
+    <button class="xbtn" id="btnCloseDetail" aria-label="閉じる" style="position:absolute;top:14px;right:16px;z-index:3">
+      <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
     </button>
+    <img id="dCover" alt="">
+    <div id="dActions">
+      <button id="dFav" aria-label="お気に入り">
+        <svg viewBox="0 0 24 24"><path d="M12 20s-7-4.6-9.2-8.5C1.2 8.6 2.9 5 6.4 5c2 0 3.5 1.1 4.3 2.6h2.6C14.1 6.1 15.6 5 17.6 5c3.5 0 5.2 3.6 3.6 6.5C19 15.4 12 20 12 20z"/></svg>
+        <span id="dFavLabel">お気に入り</span>
+      </button>
+      <button id="dStatusBtn" aria-label="所有状態を切り替え">
+        <svg id="dStatusIcon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/></svg>
+        <span id="dStatusBtnLabel">所有</span>
+      </button>
+    </div>
     <div id="dTitle"></div>
     <div id="dArtist"></div>
     <div id="dMeta"></div>
-    <span id="dStatus"></span>
     <div id="dLink">
       <svg viewBox="0 0 24 24"><path d="M10 14a4 4 0 005.7 0l3-3a4 4 0 00-5.7-5.7l-1.2 1.2"/><path d="M14 10a4 4 0 00-5.7 0l-3 3a4 4 0 005.7 5.7l1.2-1.2"/></svg>
       <a id="dLinkA" href="#" target="_blank" rel="noopener"></a>
@@ -555,7 +583,6 @@ header h1 small{display:block;font-weight:500;font-size:9.5px;letter-spacing:.24
       <button class="dbtn" id="btnEdit">編集</button>
       <button class="dbtn del" id="btnDelete">削除</button>
     </div>
-    <button class="ghost" id="btnCloseDetail">閉じる</button>
   </div>
 </div>
 
@@ -656,11 +683,13 @@ const tx=(mode)=>db.transaction(STORE,mode).objectStore(STORE);
 const dbAll=()=>new Promise((res,rej)=>{const r=tx('readonly').getAll();r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});
 const dbPut=(rec)=>new Promise((res,rej)=>{const r=tx('readwrite').put(rec);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});
 const dbDel=(id)=>new Promise((res,rej)=>{const r=tx('readwrite').delete(id);r.onsuccess=()=>res();r.onerror=()=>rej(r.error)});
+const dbClear=()=>new Promise((res,rej)=>{const r=tx('readwrite').clear();r.onsuccess=()=>res();r.onerror=()=>rej(r.error)});
 
 /* ================= state ================= */
 let records=[];
 let urls=new Map();
 let cur=0;
+let curByStatus={owned:0,want:0};
 let editingId=null, pendingBlob=null, pendingUrl=null, detailId=null;
 let favOnly=false;
 let curStatus='owned';
@@ -840,9 +869,11 @@ $('btnFav').addEventListener('click',()=>{
 document.querySelectorAll('#segWrap .seg').forEach(b=>{
   b.addEventListener('click',()=>{
     if(curStatus===b.dataset.st)return;
+    curByStatus[curStatus]=cur;              /* 現在の位置を記憶 */
     curStatus=b.dataset.st;
+    cur=curByStatus[curStatus]||0;           /* 切替先で記憶していた位置に復帰 */
     document.querySelectorAll('#segWrap .seg').forEach(x=>x.classList.toggle('active',x===b));
-    cur=0;refreshViews();
+    refreshViews();
   });
 });
 
@@ -1574,6 +1605,28 @@ $('fileImp').addEventListener('change',async e=>{
   }catch(err){toast('読み込みに失敗しました');}
 });
 
+/* ================= 全データ削除 ================= */
+$('wipeBtn').addEventListener('click',async()=>{
+  if(!records.length){toast('削除するレコードがありません');return;}
+  const n=records.length;
+  const ok1=confirm(`所有・購入予定を含む全${n}件のレコードを完全に削除します。\nこの操作は元に戻せません。続行しますか？`);
+  if(!ok1)return;
+  const ok2=confirm(`本当に削除しますか？\n(あらかじめバックアップを書き出していない場合、データは復元できません)`);
+  if(!ok2)return;
+  try{
+    await dbClear();
+    urls.forEach((u,id)=>{if(u&&u.startsWith('blob:'))URL.revokeObjectURL(u);});
+    urls.clear();
+    records=[];
+    cur=0;favOnly=false;
+    $('btnFav').classList.remove('fav-on');
+    $('batchSheet').classList.remove('open');
+    closeForm();
+    refreshViews();
+    toast(`${n}件のレコードを削除しました`);
+  }catch(err){toast('削除に失敗しました');}
+});
+
 
 /* ================= Discogs ================= */
 const DTOKEN='XCZLqdmnzPjUNpkHoeGKUgJLbFvLyXfYonnPfgTX';
@@ -1660,17 +1713,14 @@ async function applyDgsItem(it,thumbUrl){
 }
 
 /* ================= 詳細 ================= */
-function openDetail(id){
-  const rec=records.find(r=>r.id===id);
-  if(!rec)return;
-  detailId=id;
+function renderDetail(rec){
   $('dCover').src=urlOf(rec);
   $('dTitle').textContent=rec.title;
   $('dArtist').textContent=rec.artist;
   $('dMeta').textContent=[rec.year,rec.genre].filter(Boolean).join(' ・ ');
-  const st=$('dStatus');
-  st.textContent=rec.status==='want'?'購入予定':'所有';
-  st.className=rec.status==='want'?'want':'owned';
+  const sb=$('dStatusBtn');
+  sb.className=rec.status==='want'?'want':'owned';
+  $('dStatusBtnLabel').textContent=rec.status==='want'?'購入予定':'所有';
   const lk=$('dLink');
   if(rec.url){
     $('dLinkA').href=rec.url;
@@ -1681,8 +1731,43 @@ function openDetail(id){
   if(rec.memo){m.textContent=rec.memo;m.style.display='block'}else{m.style.display='none'}
   $('dFav').classList.toggle('on',!!rec.fav);
   $('dFavLabel').textContent=rec.fav?'お気に入り登録済み':'お気に入り';
+}
+function openDetail(id){
+  const rec=records.find(r=>r.id===id);
+  if(!rec)return;
+  detailId=id;
+  renderDetail(rec);
   $('detailSheet').classList.add('open');
 }
+/* 詳細画面での左右フリック(スワイプ)で前後のレコードへ移動 */
+function detailNav(dir){
+  const list=visible();
+  const idx=list.findIndex(r=>r.id===detailId);
+  if(idx<0)return;
+  const ni=idx+dir;
+  if(ni<0||ni>=list.length)return;
+  const nrec=list[ni];
+  detailId=nrec.id;
+  cur=ni;   /* カバーフロー側の位置も同期 */
+  renderDetail(nrec);
+}
+(function(){
+  const panel=$('detailPanel');
+  let sx=0,sy=0,tracking=false;
+  panel.addEventListener('touchstart',e=>{
+    if(e.touches.length!==1){tracking=false;return;}
+    sx=e.touches[0].clientX;sy=e.touches[0].clientY;tracking=true;
+  },{passive:true});
+  panel.addEventListener('touchend',e=>{
+    if(!tracking)return;tracking=false;
+    const t=e.changedTouches[0];
+    const dx=t.clientX-sx, dy=t.clientY-sy;
+    /* 横方向の移動が縦より十分大きい場合のみフリックとして扱う */
+    if(Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy)*1.6){
+      detailNav(dx<0?1:-1);   /* 左フリック=次、右フリック=前 */
+    }
+  },{passive:true});
+})();
 $('dFav').addEventListener('click',async()=>{
   const rec=records.find(r=>r.id===detailId);
   if(!rec)return;
@@ -1691,6 +1776,20 @@ $('dFav').addEventListener('click',async()=>{
   $('dFav').classList.toggle('on',rec.fav);
   $('dFavLabel').textContent=rec.fav?'お気に入り登録済み':'お気に入り';
   toast(rec.fav?'お気に入りに追加しました':'お気に入りを解除しました');
+  refreshViews();
+});
+$('dStatusBtn').addEventListener('click',async()=>{
+  const rec=records.find(r=>r.id===detailId);
+  if(!rec)return;
+  rec.status=rec.status==='want'?'owned':'want';
+  await dbPut(rec);
+  const sb=$('dStatusBtn');
+  sb.className=rec.status==='want'?'want':'owned';
+  $('dStatusBtnLabel').textContent=rec.status==='want'?'購入予定':'所有';
+  toast(rec.status==='want'?'「購入予定」に変更しました':'「所有」に変更しました');
+  /* 表示中のリストから外れるため詳細を閉じて一覧を更新 */
+  $('detailSheet').classList.remove('open');
+  cur=0;
   refreshViews();
 });
 $('btnCloseDetail').addEventListener('click',()=>$('detailSheet').classList.remove('open'));

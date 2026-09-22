@@ -2247,16 +2247,21 @@ $('fbMigrateBtn').addEventListener('click',async()=>{
     $('apBar').style.width=`${Math.round((i/local.length)*100)}%`;
     $('apCounts').textContent=`${i+1} / ${local.length} 件　(成功 ${ok} / 失敗 ${fail})`;
     try{
-      const copy={...rec};delete copy.id;   /* Firestore側で新しいIDを発行させる */
+      /* この端末の元のidをそのままFirestoreのドキュメントIDとして使う。
+         こうすることで、再実行しても重複登録されず、失敗した分だけ安全にやり直せる */
+      const copy={...rec, id:`local-${rec.id}`};
       await fsPut(copy);
       ok++;
-    }catch(e){fail++;}
+    }catch(e){
+      console.error('migrate failed for',rec.id,rec.title,e);
+      fail++;
+    }
   }
   $('apBar').style.width='100%';
   $('autoProgSheet').classList.remove('open');
   records=(await dbAll()).map(norm);
   refreshViews();
-  toast(`アップロード完了: 成功${ok}件 / 失敗${fail}件`);
+  toast(`アップロード完了: 成功${ok}件 / 失敗${fail}件${fail?'(もう一度アップロードを押すと失敗分だけ安全に再試行できます)':''}`);
 });
 
 (function(){

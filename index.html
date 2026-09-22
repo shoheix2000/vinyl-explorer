@@ -590,13 +590,13 @@ header h1 small{display:block;font-weight:500;font-size:9.5px;letter-spacing:.24
 <div class="sheet" id="autoProgSheet">
   <div class="panel" style="text-align:center">
     <div class="grip"></div>
-    <h2 style="margin-bottom:8px">ジャケットを自動取得中</h2>
+    <h2 id="apTitle" style="margin-bottom:8px">ジャケットを自動取得中</h2>
     <div id="apStatus" style="font-size:15px;color:var(--muted);margin-bottom:16px">準備中...</div>
     <div style="height:10px;border-radius:999px;background:var(--surface2);overflow:hidden;margin-bottom:16px">
       <div id="apBar" style="height:100%;width:0%;background:var(--want);border-radius:999px;transition:width .2s"></div>
     </div>
     <div id="apCounts" style="font-size:13px;color:var(--muted);margin-bottom:8px"></div>
-    <div style="font-size:12px;color:var(--muted);opacity:.75;margin-bottom:18px;line-height:1.6">iTunes側のレート制限に配慮し、意図的に間隔を空けて実行しています。<br>アプリを閉じずそのままお待ちください。</div>
+    <div id="apHint" style="font-size:12px;color:var(--muted);opacity:.75;margin-bottom:18px;line-height:1.6">iTunes側のレート制限に配慮し、意図的に間隔を空けて実行しています。<br>アプリを閉じずそのままお待ちください。</div>
     <button class="ghost" id="apStop" style="margin-top:0">中止してここまでの結果を保存</button>
   </div>
 </div>
@@ -819,6 +819,14 @@ let fbUser=null, firebaseActive=false;
 function fsCol(){
   return firebase.firestore().collection('users').doc(fbUser.uid).collection('records');
 }
+function withTimeout(promise,ms,label){
+  /* 通信が固まって二度と応答が返らないケース(ブロッカー等)でも、
+     一定時間で必ず失敗として処理を先へ進められるようにする */
+  return Promise.race([
+    promise,
+    new Promise((_,rej)=>setTimeout(()=>rej(new Error((label||'operation')+' timeout')),ms)),
+  ]);
+}
 async function fsPut(rec){
   const col=fsCol();
   const id=rec.id!=null?String(rec.id):col.doc().id;
@@ -826,16 +834,21 @@ async function fsPut(rec){
   delete data.id;
   if(data.image instanceof Blob){
     const ref=firebase.storage().ref(`users/${fbUser.uid}/covers/${id}.jpg`);
-    await ref.put(data.image,{contentType:'image/jpeg'});
-    data.image_url=await ref.getDownloadURL();
+    try{
+      await withTimeout(ref.put(data.image,{contentType:'image/jpeg'}),20000,'storage upload');
+      data.image_url=await withTimeout(ref.getDownloadURL(),15000,'get download url');
+    }catch(e){
+      /* 画像アップロードだけ失敗した場合は、画像なしでメタデータだけは保存を続行する */
+      console.error('cover upload failed for',id,e);
+    }
   }
   delete data.image;
   Object.keys(data).forEach(k=>{if(data[k]===undefined)delete data[k];});
-  await col.doc(id).set(data);
+  await withTimeout(col.doc(id).set(data),15000,'firestore write');
   return id;
 }
 async function fsAll(){
-  const snap=await fsCol().get();
+  const snap=await withTimeout(fsCol().get(),20000,'firestore read');
   return snap.docs.map(d=>({id:d.id,...d.data()}));
 }
 async function fsDel(id){
@@ -1544,6 +1557,8 @@ $('fileCSVAuto').addEventListener('change',async e=>{
 
     /* 2. 進捗シートを表示しながら1件ずつiTunes検索してジャケットを設定 */
     autoAbort=false;
+    $('apTitle').textContent='ジャケットを自動取得中';
+    $('apHint').innerHTML='iTunes側のレート制限に配慮し、意図的に間隔を空けて実行しています。<br>アプリを閉じずそのままお待ちください。';
     $('autoProgSheet').classList.add('open');
     let found=0,notfound=0;
     for(let i=0;i<entries.length;i++){
@@ -2221,6 +2236,8 @@ $('fbMigrateBtn').addEventListener('click',async()=>{
   if(!local.length){toast('この端末にはアップロードできるローカルデータがありません');return;}
   $('batchSheet').classList.remove('open');
   autoAbort=false;
+  $('apTitle').textContent='Firebaseへアップロード中';
+  $('apHint').innerHTML='通信が固まった場合も一定時間で自動的にスキップして次へ進みます。<br>アプリを閉じずそのままお待ちください。';
   $('autoProgSheet').classList.add('open');
   let ok=0,fail=0;
   for(let i=0;i<local.length;i++){

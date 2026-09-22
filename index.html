@@ -40,10 +40,10 @@ header{
   position:fixed;top:0;left:0;right:0;z-index:20;
   padding:calc(env(safe-area-inset-top) + 14px) 20px 8px;
   display:flex;align-items:center;justify-content:space-between;gap:8px;
-  background:linear-gradient(to bottom,rgba(23,37,61,.97),rgba(23,37,61,.65) 70%,rgba(23,37,61,0));
+  background:linear-gradient(to bottom,rgba(23,37,61,1),rgba(23,37,61,.75) 75%,rgba(23,37,61,0));
 }
-header h1{font-size:18px;font-weight:800;letter-spacing:.03em;white-space:nowrap}
-header h1 small{display:block;font-weight:500;font-size:9.5px;letter-spacing:.24em;color:var(--muted);margin-top:2px}
+header h1{font-size:18px;font-weight:800;letter-spacing:.03em;white-space:nowrap;text-shadow:0 1px 3px rgba(0,0,0,.4)}
+header h1 small{display:block;font-weight:500;font-size:9.5px;letter-spacing:.14em;color:var(--muted);margin-top:2px}
 .hbtns{display:flex;gap:8px;flex-shrink:0}
 .iconbtn{
   width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;
@@ -63,7 +63,7 @@ header h1 small{display:block;font-weight:500;font-size:9.5px;letter-spacing:.24
   display:grid;grid-template-columns:auto auto auto;gap:4px;align-items:stretch;
   background:var(--surface2);border:1px solid var(--line);border-radius:999px;padding:4px;
 }
-.seg{min-width:0;text-align:center;padding:9px 12px;border-radius:999px;font-size:12px;font-weight:600;letter-spacing:.04em;color:var(--muted);white-space:nowrap}
+.seg{min-width:0;text-align:center;padding:9px 12px;border-radius:999px;font-size:12px;font-weight:600;letter-spacing:.01em;color:var(--muted);white-space:nowrap}
 .seg.active[data-st="owned"]{background:var(--btn);color:#fff}
 .seg.active[data-st="want"]{background:var(--want);color:#0c2430}
 #favSeg{width:38px;padding:0;display:flex;align-items:center;justify-content:center}
@@ -117,11 +117,11 @@ header h1 small{display:block;font-weight:500;font-size:9.5px;letter-spacing:.24
 }
 #caption .title .hh{color:var(--heart);margin-left:6px;font-size:23px}
 #caption .artist{
-  margin-top:6px;font-size:16px;font-weight:600;letter-spacing:.16em;color:var(--accent);text-transform:uppercase;
+  margin-top:6px;font-size:16px;font-weight:600;letter-spacing:.05em;color:var(--accent);text-transform:uppercase;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
 #caption .meta{
-  margin-top:6px;font-size:15px;letter-spacing:.08em;color:var(--muted);
+  margin-top:6px;font-size:15px;letter-spacing:.02em;color:var(--muted);
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
 #counter{
@@ -143,10 +143,8 @@ header h1 small{display:block;font-weight:500;font-size:9.5px;letter-spacing:.24
 #counter .sep{opacity:.55;margin:0 1px}
 /* 3列一覧表示でも登録枚数を同じ見た目のバッジで表示(お気に入りボタンと＋ボタンの間) */
 #gridCounter{
-  position:fixed;left:50%;transform:translateX(-50%);z-index:20;
-  bottom:max(15px, calc(env(safe-area-inset-bottom) + 9px));
   width:fit-content;height:36px;display:none;align-items:center;gap:7px;
-  padding:0 15px;border-radius:999px;white-space:nowrap;
+  margin:0 auto 14px;padding:0 15px;border-radius:999px;white-space:nowrap;
   background:linear-gradient(160deg,rgba(10,18,36,.9),rgba(18,34,62,.75));
   border:1px solid rgba(255,255,255,.22);
   box-shadow:0 4px 14px rgba(10,20,45,.35),inset 0 1px 0 rgba(255,255,255,.12);
@@ -189,11 +187,11 @@ header h1 small{display:block;font-weight:500;font-size:9.5px;letter-spacing:.24
 /* ===== FAB ===== */
 #fab{
   position:fixed;right:18px;bottom:max(6px, env(safe-area-inset-bottom));z-index:25;
-  width:60px;height:60px;border-radius:50%;background:var(--btn);color:#fff;
+  width:40px;height:40px;border-radius:50%;background:var(--btn);color:#fff;
   box-shadow:0 10px 28px rgba(15,28,58,.5);
   display:flex;align-items:center;justify-content:center;
 }
-#fab svg{width:27px;height:27px;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;fill:none}
+#fab svg{width:19px;height:19px;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;fill:none}
 
 /* ===== sheets ===== */
 .sheet{
@@ -335,8 +333,8 @@ header h1 small{display:block;font-weight:500;font-size:9.5px;letter-spacing:.24
 #dStatusBtn.want{border-color:rgba(88,207,192,.5);background:rgba(88,207,192,.14);color:var(--want)}
 #dStatusBtn.want svg{stroke:var(--want);fill:none}
 #dTitle{font-size:26px;font-weight:800;text-align:center;letter-spacing:.01em;line-height:1.4;min-height:calc(26px * 1.4 * 2)}
-#dArtist{text-align:center;font-size:16px;font-weight:600;letter-spacing:.16em;color:var(--accent);margin-top:6px;text-transform:uppercase;min-height:calc(16px * 1.3 * 2);line-height:1.3}
-#dMeta{text-align:center;font-size:15.5px;color:var(--muted);margin-top:8px;letter-spacing:.05em;min-height:calc(15.5px * 1.3)}
+#dArtist{text-align:center;font-size:16px;font-weight:600;letter-spacing:.05em;color:var(--accent);margin-top:6px;text-transform:uppercase;min-height:calc(16px * 1.3 * 2);line-height:1.3}
+#dMeta{text-align:center;font-size:15.5px;color:var(--muted);margin-top:8px;letter-spacing:.02em;min-height:calc(15.5px * 1.3)}
 #dLink{display:none;align-items:center;gap:8px;margin-top:14px;padding:13px;background:var(--surface2);border-radius:10px;max-width:100%}
 #dLink svg{width:18px;height:18px;flex-shrink:0;stroke:var(--accent);fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 #dLink a{flex:1;min-width:0;font-size:16px;text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -401,10 +399,11 @@ header h1 small{display:block;font-weight:500;font-size:9.5px;letter-spacing:.24
   #capText{height:44px}
   #caption .title{font-size:17px;line-height:1.2}
   #caption .title .hh{font-size:15px}
-  #caption .artist{margin-top:2px;font-size:11px;letter-spacing:.1em}
+  #caption .artist{margin-top:2px;font-size:11px;letter-spacing:.04em}
   #caption .meta{display:none}   /* 横画面では年代・ジャンルは非表示 */
   #counter{display:none!important}
-  #fab{width:50px;height:50px;bottom:max(10px,calc(env(safe-area-inset-bottom) - 6px))}
+  #fab{width:36px;height:36px;bottom:max(10px,calc(env(safe-area-inset-bottom) - 6px))}
+  #fab svg{width:17px;height:17px}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
@@ -451,7 +450,7 @@ header h1 small{display:block;font-weight:500;font-size:9.5px;letter-spacing:.24
   </div>
 </div>
 
-<div id="gridView"><div id="grid"></div><div id="gridCounter"></div></div>
+<div id="gridView"><div id="gridCounter"></div><div id="grid"></div></div>
 
 <button id="fab" aria-label="レコードを追加">
   <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
